@@ -42,6 +42,8 @@ function DepartmentForm({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (loading) return;
+
     if (!form.name.trim()) {
       alert("Department name is required.");
       return;

@@ -17,6 +17,7 @@ function EmployeeTable({
               <th className="px-3 py-3 sm:px-5 sm:py-3 text-left whitespace-nowrap">Phone</th>
               <th className="px-3 py-3 sm:px-5 sm:py-3 text-left whitespace-nowrap">Department</th>
               <th className="px-3 py-3 sm:px-5 sm:py-3 text-left whitespace-nowrap">Position</th>
+              <th className="px-3 py-3 sm:px-5 sm:py-3 text-left whitespace-nowrap">Status</th>
               <th className="px-3 py-3 sm:px-5 sm:py-3 text-left whitespace-nowrap">Salary</th>
               <th className="px-3 py-3 sm:px-5 sm:py-3 text-center whitespace-nowrap">Action</th>
             </tr>
@@ -25,7 +26,7 @@ function EmployeeTable({
           <tbody>
             {employees.length === 0 ? (
               <tr>
-                <td colSpan={8}>
+                <td colSpan={9}>
                   <EmptyState
                     title="No Employees Found"
                     description="Add your first employee to get started."
@@ -47,11 +48,23 @@ function EmployeeTable({
                   <td className="px-3 py-3 sm:px-5 sm:py-4 whitespace-nowrap">{employee.phone}</td>
 
                   <td className="px-3 py-3 sm:px-5 sm:py-4 whitespace-nowrap">
-                    {employee.departments?.name}
+                    {employee.departments?.name || "-"}
                   </td>
 
                   <td className="px-3 py-3 sm:px-5 sm:py-4 whitespace-nowrap">
                     {employee.position}
+                  </td>
+
+                  <td className="px-3 py-3 sm:px-5 sm:py-4 whitespace-nowrap">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
+                        employee.status?.toLowerCase() === "active"
+                          ? "bg-emerald-100 text-emerald-800"
+                          : "bg-rose-100 text-rose-800"
+                      }`}
+                    >
+                      {employee.status || "active"}
+                    </span>
                   </td>
 
                   <td className="px-3 py-3 sm:px-5 sm:py-4 whitespace-nowrap">

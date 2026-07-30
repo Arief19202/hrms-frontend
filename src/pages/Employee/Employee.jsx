@@ -11,28 +11,36 @@ import DeleteEmployeeModal from "../../components/employee/DeleteEmployeeModal";
 function Employee() {
   const [employees, setEmployees] = useState([]);
   const [pagination, setPagination] = useState({});
+  const [departments, setDepartments] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const [search, setSearch] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
   const [openModal, setOpenModal] = useState(false);
-
   const [mode, setMode] = useState("add");
-
   const [selectedEmployee, setSelectedEmployee] = useState(null);
-
   const [deleteModal, setDeleteModal] = useState(false);
 
-  const fetchEmployees = async (page = 1, keyword = "") => {
+  const fetchEmployees = async (
+    page = 1,
+    keyword = search,
+    deptId = departmentFilter,
+    statusVal = statusFilter
+  ) => {
     try {
       setError("");
 
-      const response = await api.get(
-        `/employees?page=${page}&search=${keyword}`
-      );
+      const params = new URLSearchParams();
+      params.append("page", page);
+      if (keyword) params.append("search", keyword);
+      if (deptId) params.append("department_id", deptId);
+      if (statusVal) params.append("status", statusVal);
 
+      const response = await api.get(`/employees?${params.toString()}`);
       setEmployees(response.data.data);
       setPagination(response.data.pagination);
     } catch (err) {
@@ -43,20 +51,28 @@ function Employee() {
     }
   };
 
+  // Load departments list & initial employees
   useEffect(() => {
     let ignore = false;
-    const load = async () => {
+    const loadInitialData = async () => {
       try {
-        const response = await api.get("/employees?page=1&search=");
+        setLoading(true);
+        setError("");
+
+        const [deptsRes, empsRes] = await Promise.all([
+          api.get("/departments?limit=100"),
+          api.get("/employees?page=1")
+        ]);
+
         if (!ignore) {
-          setError("");
-          setEmployees(response.data.data);
-          setPagination(response.data.pagination);
+          setDepartments(deptsRes.data.data || []);
+          setEmployees(empsRes.data.data || []);
+          setPagination(empsRes.data.pagination || {});
         }
       } catch (err) {
         if (!ignore) {
           console.error(err);
-          setError("Failed to load employees.");
+          setError("Failed to load initial data.");
         }
       } finally {
         if (!ignore) {
@@ -64,7 +80,8 @@ function Employee() {
         }
       }
     };
-    load();
+
+    loadInitialData();
     return () => {
       ignore = true;
     };
@@ -72,12 +89,32 @@ function Employee() {
 
   const handleSearch = () => {
     setLoading(true);
-    fetchEmployees(1, search);
+    fetchEmployees(1, search, departmentFilter, statusFilter);
+  };
+
+  const handleDepartmentChange = (deptId) => {
+    setDepartmentFilter(deptId);
+    setLoading(true);
+    fetchEmployees(1, search, deptId, statusFilter);
+  };
+
+  const handleStatusChange = (statusVal) => {
+    setStatusFilter(statusVal);
+    setLoading(true);
+    fetchEmployees(1, search, departmentFilter, statusVal);
+  };
+
+  const handleResetFilters = () => {
+    setSearch("");
+    setDepartmentFilter("");
+    setStatusFilter("");
+    setLoading(true);
+    fetchEmployees(1, "", "", "");
   };
 
   const handlePageChange = (page) => {
     setLoading(true);
-    fetchEmployees(page, search);
+    fetchEmployees(page, search, departmentFilter, statusFilter);
   };
 
   // ==========================
@@ -113,10 +150,9 @@ function Employee() {
       setDeleteModal(false);
       setSelectedEmployee(null);
 
-      fetchEmployees(pagination.page, search);
+      fetchEmployees(pagination.page || 1, search, departmentFilter, statusFilter);
 
       alert("Employee deleted successfully.");
-
     } catch (error) {
       console.error(error);
       alert("Failed to delete employee.");
@@ -130,18 +166,18 @@ function Employee() {
     setOpenModal(false);
     setSelectedEmployee(null);
 
-    fetchEmployees(pagination.page, search);
+    fetchEmployees(pagination.page || 1, search, departmentFilter, statusFilter);
   };
 
-  if (loading) {
+  if (loading && !employees.length) {
     return (
-      <div className="text-center text-xl font-semibold">
+      <div className="text-center text-xl font-semibold p-8">
         Loading Employees...
       </div>
     );
   }
 
-  if (error) {
+  if (error && !employees.length) {
     return (
       <div className="bg-red-100 text-red-700 p-4 rounded-lg">
         {error}
@@ -151,10 +187,8 @@ function Employee() {
 
   return (
     <div className="space-y-6">
-
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold">
             Employee Management
@@ -171,14 +205,21 @@ function Employee() {
         >
           + Add Employee
         </button>
-
       </div>
 
-      {/* Search */}
+      {/* Filter / Search Bar */}
       <EmployeeSearch
         search={search}
         setSearch={setSearch}
+        departmentFilter={departmentFilter}
+        setDepartmentFilter={setDepartmentFilter}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        departments={departments}
         onSearch={handleSearch}
+        onDepartmentChange={handleDepartmentChange}
+        onStatusChange={handleStatusChange}
+        onReset={handleResetFilters}
       />
 
       {/* Table */}
@@ -197,11 +238,7 @@ function Employee() {
       {/* Add / Edit Modal */}
       <EmployeeModal
         open={openModal}
-        title={
-          mode === "add"
-            ? "Add Employee"
-            : "Edit Employee"
-        }
+        title={mode === "add" ? "Add Employee" : "Edit Employee"}
         onClose={() => {
           setOpenModal(false);
           setSelectedEmployee(null);
@@ -228,7 +265,6 @@ function Employee() {
         }}
         onConfirm={handleDeleteEmployee}
       />
-
     </div>
   );
 }

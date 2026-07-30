@@ -75,6 +75,8 @@ function MyLeave() {
     }));
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const calculateDays = () => {
     if (!form.start_date || !form.end_date) return null;
     const start = new Date(form.start_date);
@@ -89,6 +91,8 @@ function MyLeave() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (isSubmitting) return;
+
     if (!form.start_date || !form.end_date) {
       alert("Please select both start date and end date.");
       return;
@@ -99,8 +103,29 @@ function MyLeave() {
       return;
     }
 
+    const availableBalance = Number(profile?.annual_leave_balance ?? 0);
+
+    if (form.leave_type === "annual") {
+      if (availableBalance <= 0) {
+        alert("Your annual leave balance is 0. You cannot submit an annual leave request.");
+        return;
+      }
+
+      if (daysCount && daysCount > availableBalance) {
+        alert(
+          `Requested leave duration (${daysCount} days) exceeds remaining annual leave balance (${availableBalance} days).`
+        );
+        return;
+      }
+    }
+
     try {
-      await applyLeave(form);
+      setIsSubmitting(true);
+
+      await applyLeave({
+        ...form,
+        total_days: daysCount || 1,
+      });
 
       alert("Leave request submitted successfully.");
 
@@ -119,6 +144,8 @@ function MyLeave() {
         error.response?.data?.message ||
         "Failed to submit leave."
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -260,9 +287,14 @@ function MyLeave() {
 
             <button
               type="submit"
-              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold shadow hover:shadow-md transition-all"
+              disabled={isSubmitting}
+              className={`w-full sm:w-auto px-8 py-3 rounded-lg font-semibold shadow transition-all ${
+                isSubmitting
+                  ? "bg-gray-400 text-white cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700 text-white hover:shadow-md"
+              }`}
             >
-              Submit Leave Request
+              {isSubmitting ? "Submitting..." : "Submit Leave Request"}
             </button>
 
           </div>

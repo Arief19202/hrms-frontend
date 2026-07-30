@@ -58,7 +58,7 @@ function EmployeeForm({
     let ignore = false;
     const load = async () => {
       try {
-        const response = await api.get("/departments");
+        const response = await api.get("/departments?limit=100");
         if (!ignore) {
           setDepartments(response.data.data || []);
         }
@@ -81,6 +81,8 @@ function EmployeeForm({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (loading) return;
 
     setLoading(true);
     setErrors([]);

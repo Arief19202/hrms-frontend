@@ -126,22 +126,22 @@ function LeaveTable({
                                         Delete
                                     </button>
 
-                                    {leave.status === "pending" && (
-                                        <>
-                                            <button
-                                                onClick={() => onApprove(leave.id)}
-                                                className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs sm:text-sm"
-                                            >
-                                                Approve
-                                            </button>
+                                    {leave.status !== "approved" && (
+                                        <button
+                                            onClick={() => onApprove(leave.id)}
+                                            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs sm:text-sm"
+                                        >
+                                            Approve
+                                        </button>
+                                    )}
 
-                                            <button
-                                                onClick={() => onReject(leave.id)}
-                                                className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-xs sm:text-sm"
-                                            >
-                                                Reject
-                                            </button>
-                                        </>
+                                    {leave.status !== "rejected" && (
+                                        <button
+                                            onClick={() => onReject(leave.id)}
+                                            className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-xs sm:text-sm"
+                                        >
+                                            Reject
+                                        </button>
                                     )}
 
                                 </div>

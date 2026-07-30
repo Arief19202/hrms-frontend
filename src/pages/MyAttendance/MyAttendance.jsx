@@ -91,8 +91,12 @@ function MyAttendance() {
     };
   }, []);
 
+  const [actionLoading, setActionLoading] = useState(false);
+
   const handleCheckIn = async () => {
+    if (actionLoading || attendance?.check_in) return;
     try {
+      setActionLoading(true);
       await checkIn();
 
       alert("Check In Successful");
@@ -103,11 +107,15 @@ function MyAttendance() {
         error.response?.data?.message ||
           "Check In Failed"
       );
+    } finally {
+      setActionLoading(false);
     }
   };
 
   const handleCheckOut = async () => {
+    if (actionLoading || !attendance?.check_in || attendance?.check_out) return;
     try {
+      setActionLoading(true);
       await checkOut();
 
       alert("Check Out Successful");
@@ -118,12 +126,18 @@ function MyAttendance() {
         error.response?.data?.message ||
           "Check Out Failed"
       );
+    } finally {
+      setActionLoading(false);
     }
   };
 
   if (loading) {
     return <LoadingSpinner />;
   }
+
+  const hasCheckedIn = !!attendance?.check_in;
+  const hasCheckedOut = !!attendance?.check_out;
+  const isCompleted = hasCheckedIn && hasCheckedOut;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -232,34 +246,42 @@ function MyAttendance() {
 
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 mt-8">
-
-          <button
-            onClick={handleCheckIn}
-            disabled={!!attendance?.check_in}
-            className={`w-full sm:w-auto px-8 py-3.5 rounded-xl font-semibold transition-all shadow-md ${
-              attendance?.check_in
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
-                : "bg-emerald-600 hover:bg-emerald-700 text-white hover:shadow-lg active:scale-95"
-            }`}
-          >
-            {attendance?.check_in ? "Already Checked In" : "Check In Now"}
-          </button>
-
-          <button
-            onClick={handleCheckOut}
-            disabled={!attendance?.check_in || !!attendance?.check_out}
-            className={`w-full sm:w-auto px-8 py-3.5 rounded-xl font-semibold transition-all shadow-md ${
-              !attendance?.check_in || attendance?.check_out
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
-                : "bg-rose-600 hover:bg-rose-700 text-white hover:shadow-lg active:scale-95"
-            }`}
-          >
-            {attendance?.check_out
-              ? "Already Checked Out"
-              : "Check Out Now"}
-          </button>
-
+        {/* Action Buttons & Attendance Completed State */}
+        <div className="mt-8">
+          {isCompleted ? (
+            <div className="bg-emerald-100 border border-emerald-300 rounded-xl p-4 text-center">
+              <span className="inline-flex items-center gap-2 text-emerald-800 font-bold text-base sm:text-lg">
+                ✅ Attendance Completed
+              </span>
+              <p className="text-emerald-600 text-xs sm:text-sm mt-1">
+                You have completed both Check In and Check Out for today.
+              </p>
+            </div>
+          ) : !hasCheckedIn ? (
+            <button
+              onClick={handleCheckIn}
+              disabled={actionLoading}
+              className={`w-full sm:w-auto px-8 py-3.5 rounded-xl font-semibold transition-all shadow-md ${
+                actionLoading
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-emerald-600 hover:bg-emerald-700 text-white hover:shadow-lg active:scale-95"
+              }`}
+            >
+              {actionLoading ? "Processing Check In..." : "Check In Now"}
+            </button>
+          ) : (
+            <button
+              onClick={handleCheckOut}
+              disabled={actionLoading}
+              className={`w-full sm:w-auto px-8 py-3.5 rounded-xl font-semibold transition-all shadow-md ${
+                actionLoading
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-rose-600 hover:bg-rose-700 text-white hover:shadow-lg active:scale-95"
+              }`}
+            >
+              {actionLoading ? "Processing Check Out..." : "Check Out Now"}
+            </button>
+          )}
         </div>
 
       </div>
