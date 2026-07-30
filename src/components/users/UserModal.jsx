@@ -5,6 +5,7 @@ function UserModal({
   onClose,
   onSubmit,
   initialData,
+  departments = [],
 }) {
   const [prevData, setPrevData] = useState(null);
   const [form, setForm] = useState({
@@ -12,6 +13,7 @@ function UserModal({
     email: "",
     password: "",
     role: "employee",
+    department_id: "",
   });
 
   if (initialData !== prevData) {
@@ -21,6 +23,7 @@ function UserModal({
       email: initialData?.email || "",
       password: "",
       role: initialData?.role || "employee",
+      department_id: initialData?.employees?.department_id || initialData?.department_id || "",
     });
   }
 
@@ -52,48 +55,87 @@ function UserModal({
           className="space-y-4"
         >
 
-          <input
-            name="name"
-            placeholder="Name"
-            value={form.name}
-            onChange={handleChange}
-            className="w-full border rounded-lg p-3"
-            required
-          />
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+              Name
+            </label>
+            <input
+              name="name"
+              placeholder="Name"
+              value={form.name}
+              onChange={handleChange}
+              className="w-full border rounded-lg p-3 text-sm sm:text-base"
+              required
+            />
+          </div>
 
-          <input
-            name="email"
-            placeholder="Email"
-            value={form.email}
-            onChange={handleChange}
-            className="w-full border rounded-lg p-3"
-            required
-          />
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+              Email
+            </label>
+            <input
+              name="email"
+              placeholder="Email"
+              value={form.email}
+              onChange={handleChange}
+              className="w-full border rounded-lg p-3 text-sm sm:text-base"
+              required
+            />
+          </div>
 
-          <input
-            type="password"
-            name="password"
-            placeholder={
-              initialData
-                ? "Leave blank to keep password"
-                : "Password"
-            }
-            value={form.password}
-            onChange={handleChange}
-            className="w-full border rounded-lg p-3"
-            required={!initialData}
-          />
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+              Password
+            </label>
+            <input
+              type="password"
+              name="password"
+              placeholder={
+                initialData
+                  ? "Leave blank to keep password"
+                  : "Password"
+              }
+              value={form.password}
+              onChange={handleChange}
+              className="w-full border rounded-lg p-3 text-sm sm:text-base"
+              required={!initialData}
+            />
+          </div>
 
-          <select
-            name="role"
-            value={form.role}
-            onChange={handleChange}
-            className="w-full border rounded-lg p-3"
-          >
-            <option value="admin">Admin</option>
-            <option value="hr">HR</option>
-            <option value="employee">Employee</option>
-          </select>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+              Role
+            </label>
+            <select
+              name="role"
+              value={form.role}
+              onChange={handleChange}
+              className="w-full border rounded-lg p-3 text-sm sm:text-base bg-white"
+            >
+              <option value="admin">Admin</option>
+              <option value="hr">HR</option>
+              <option value="employee">Employee</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+              Department
+            </label>
+            <select
+              name="department_id"
+              value={form.department_id}
+              onChange={handleChange}
+              className="w-full border rounded-lg p-3 text-sm sm:text-base bg-white"
+            >
+              <option value="">Select Department</option>
+              {departments.map((dept) => (
+                <option key={dept.id} value={dept.id}>
+                  {dept.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
           <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-3">
 

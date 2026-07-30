@@ -8,6 +8,7 @@ import {
   resetPassword,
 } from "../../services/userService";
 
+import api from "../../api/axios";
 import UserModal from "../../components/users/UserModal";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
@@ -15,12 +16,31 @@ import EmptyState from "../../components/ui/EmptyState";
 
 function Users() {
   const [users, setUsers] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({});
   const [openModal, setOpenModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+
+  useEffect(() => {
+    let ignore = false;
+    const fetchDepartments = async () => {
+      try {
+        const response = await api.get("/departments?limit=100");
+        if (!ignore) {
+          setDepartments(response.data.data || []);
+        }
+      } catch (err) {
+        console.error("Failed to load departments for User Management:", err);
+      }
+    };
+    fetchDepartments();
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   const loadUsers = useCallback(async () => {
     try {
@@ -251,6 +271,8 @@ function Users() {
 
                 <th className="p-3 text-left whitespace-nowrap">Role</th>
 
+                <th className="p-3 text-left whitespace-nowrap">Department</th>
+
                 <th className="p-3 text-left whitespace-nowrap">Status</th>
 
                 <th className="p-3 text-center whitespace-nowrap">
@@ -268,7 +290,7 @@ function Users() {
                 <tr>
 
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="text-center py-10"
                   >
                     Loading...
@@ -279,7 +301,7 @@ function Users() {
               ) : users.length === 0 ? (
 
                 <tr>
-                <td colSpan={5}>
+                <td colSpan={6}>
                   <EmptyState
                     title="No Users Found"
                     description="Create your first user to get started."
@@ -304,8 +326,12 @@ function Users() {
                       {user.email}
                     </td>
 
-                    <td className="p-3 capitalize whitespace-nowrap">
+                    <td className="p-3 capitalize whitespace-nowrap font-medium">
                       {user.role}
+                    </td>
+
+                    <td className="p-3 whitespace-nowrap text-gray-600">
+                      {user.employees?.departments?.name || "-"}
                     </td>
 
                     <td className="p-3 whitespace-nowrap">
@@ -369,6 +395,7 @@ function Users() {
           onClose={() => setOpenModal(false)}
           onSubmit={handleSave}
           initialData={selectedUser}
+          departments={departments}
         />
 
       </div>
