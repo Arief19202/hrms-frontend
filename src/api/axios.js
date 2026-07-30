@@ -13,6 +13,12 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
+    try {
+      config.headers["x-timezone"] = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch {
+      // ignore
+    }
+
     return config;
   },
   (error) => Promise.reject(error)
