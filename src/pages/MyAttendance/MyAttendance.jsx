@@ -13,19 +13,6 @@ function MyAttendance() {
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date();
-      setCurrentTime((prevTime) => {
-        if (prevTime.getDate() !== now.getDate()) {
-          loadAttendance();
-        }
-        return now;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [loadAttendance]);
-
   const formatTime = (timeStr) => {
     if (!timeStr) return "-";
     try {
@@ -72,30 +59,21 @@ function MyAttendance() {
   }, []);
 
   useEffect(() => {
-    let ignore = false;
-    const load = async () => {
-      try {
-        const [todayRes, historyRes] = await Promise.all([
-          getTodayAttendance(),
-          getMyAttendanceHistory().catch(() => ({ data: [] })),
-        ]);
-        if (!ignore) {
-          setAttendance(todayRes.data);
-          setHistory(historyRes.data || []);
+    loadAttendance();
+  }, [loadAttendance]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      setCurrentTime((prevTime) => {
+        if (prevTime.getDate() !== now.getDate()) {
+          loadAttendance();
         }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        if (!ignore) {
-          setLoading(false);
-        }
-      }
-    };
-    load();
-    return () => {
-      ignore = true;
-    };
-  }, []);
+        return now;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [loadAttendance]);
 
   const [actionLoading, setActionLoading] = useState(false);
 
