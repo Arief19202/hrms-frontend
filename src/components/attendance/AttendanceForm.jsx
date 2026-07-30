@@ -204,7 +204,7 @@ function AttendanceForm({
                 <div>
 
                     <label className="block mb-1 font-medium">
-                        Check In
+                        Clock In Time
                     </label>
 
                     <input
@@ -220,7 +220,7 @@ function AttendanceForm({
                 <div>
 
                     <label className="block mb-1 font-medium">
-                        Check Out
+                        Clock Out Time
                     </label>
 
                     <input

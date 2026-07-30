@@ -47,8 +47,8 @@ function AttendanceTable({
                             <th className="px-3 py-3 sm:px-4 sm:py-3 text-left whitespace-nowrap">Employee</th>
                             <th className="px-3 py-3 sm:px-4 sm:py-3 text-left whitespace-nowrap">Email</th>
                             <th className="px-3 py-3 sm:px-4 sm:py-3 text-left whitespace-nowrap">Date</th>
-                            <th className="px-3 py-3 sm:px-4 sm:py-3 text-left whitespace-nowrap">Check In</th>
-                            <th className="px-3 py-3 sm:px-4 sm:py-3 text-left whitespace-nowrap">Check Out</th>
+                            <th className="px-3 py-3 sm:px-4 sm:py-3 text-left whitespace-nowrap">Clock In Time</th>
+                            <th className="px-3 py-3 sm:px-4 sm:py-3 text-left whitespace-nowrap">Clock Out Time</th>
                             <th className="px-3 py-3 sm:px-4 sm:py-3 text-left whitespace-nowrap">Status</th>
                             <th className="px-3 py-3 sm:px-4 sm:py-3 text-center whitespace-nowrap">Action</th>
                         </tr>

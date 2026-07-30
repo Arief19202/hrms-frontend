@@ -99,13 +99,13 @@ function MyAttendance() {
       setActionLoading(true);
       await checkIn();
 
-      alert("Check In Successful");
+      alert("Clock In Successful");
 
       loadAttendance();
     } catch (error) {
       alert(
         error.response?.data?.message ||
-          "Check In Failed"
+          "Clock In Failed"
       );
     } finally {
       setActionLoading(false);
@@ -118,13 +118,13 @@ function MyAttendance() {
       setActionLoading(true);
       await checkOut();
 
-      alert("Check Out Successful");
+      alert("Clock Out Successful");
 
       loadAttendance();
     } catch (error) {
       alert(
         error.response?.data?.message ||
-          "Check Out Failed"
+          "Clock Out Failed"
       );
     } finally {
       setActionLoading(false);
@@ -188,7 +188,7 @@ function MyAttendance() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-semibold text-emerald-900 text-sm sm:text-base">
-                  Check In Time (8:00 AM)
+                  Clock In Time (8:00 AM)
                 </h3>
                 <span className="text-xl">📥</span>
               </div>
@@ -203,7 +203,7 @@ function MyAttendance() {
                 </span>
                 {attendance?.status === "late" ? (
                   <span className="text-xs font-bold text-amber-700 bg-amber-100 px-3 py-1 rounded-full">
-                    ⚠️ Late Check-In
+                    ⚠️ Late Clock-In
                   </span>
                 ) : (
                   <span className="text-xs font-bold text-emerald-700 bg-emerald-200 px-3 py-1 rounded-full">
@@ -218,7 +218,7 @@ function MyAttendance() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-semibold text-rose-900 text-sm sm:text-base">
-                  Check Out Time (5:00 PM)
+                  Clock Out Time (5:00 PM)
                 </h3>
                 <span className="text-xl">📤</span>
               </div>
@@ -254,7 +254,7 @@ function MyAttendance() {
                 ✅ Attendance Completed
               </span>
               <p className="text-emerald-600 text-xs sm:text-sm mt-1">
-                You have completed both Check In and Check Out for today.
+                You have completed both Clock In and Clock Out for today.
               </p>
             </div>
           ) : !hasCheckedIn ? (
@@ -267,7 +267,7 @@ function MyAttendance() {
                   : "bg-emerald-600 hover:bg-emerald-700 text-white hover:shadow-lg active:scale-95"
               }`}
             >
-              {actionLoading ? "Processing Check In..." : "Check In Now"}
+              {actionLoading ? "Processing Clock In..." : "Clock In Now"}
             </button>
           ) : (
             <button
@@ -279,7 +279,7 @@ function MyAttendance() {
                   : "bg-rose-600 hover:bg-rose-700 text-white hover:shadow-lg active:scale-95"
               }`}
             >
-              {actionLoading ? "Processing Check Out..." : "Check Out Now"}
+              {actionLoading ? "Processing Clock Out..." : "Clock Out Now"}
             </button>
           )}
         </div>
@@ -300,8 +300,8 @@ function MyAttendance() {
             <thead>
               <tr className="border-b bg-gray-50 text-gray-600 text-sm">
                 <th className="py-3 px-4 font-semibold whitespace-nowrap">Date</th>
-                <th className="py-3 px-4 font-semibold whitespace-nowrap">Check In</th>
-                <th className="py-3 px-4 font-semibold whitespace-nowrap">Check Out</th>
+                <th className="py-3 px-4 font-semibold whitespace-nowrap">Clock In Time</th>
+                <th className="py-3 px-4 font-semibold whitespace-nowrap">Clock Out Time</th>
                 <th className="py-3 px-4 font-semibold whitespace-nowrap">Status</th>
               </tr>
             </thead>
