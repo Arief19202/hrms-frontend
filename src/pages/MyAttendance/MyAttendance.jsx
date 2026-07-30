@@ -15,10 +15,16 @@ function MyAttendance() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentTime(new Date());
+      const now = new Date();
+      setCurrentTime((prevTime) => {
+        if (prevTime.getDate() !== now.getDate()) {
+          loadAttendance();
+        }
+        return now;
+      });
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [loadAttendance]);
 
   const formatTime = (timeStr) => {
     if (!timeStr) return "-";
