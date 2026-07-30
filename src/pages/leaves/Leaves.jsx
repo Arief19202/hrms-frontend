@@ -223,15 +223,15 @@ function Leave() {
 
         <div className="space-y-6">
 
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 
-                <h1 className="text-2xl font-bold">
+                <h1 className="text-2xl sm:text-3xl font-bold">
                     Leave Management
                 </h1>
 
                 <button
                     onClick={openAddModal}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                    className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-semibold"
                 >
                     + Add Leave
                 </button>

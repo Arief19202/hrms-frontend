@@ -39,11 +39,11 @@ function UserModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+    <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50 p-4">
 
-      <div className="bg-white rounded-xl w-[450px] p-6">
+      <div className="bg-white rounded-xl w-full max-w-md mx-4 p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
 
-        <h2 className="text-2xl font-bold mb-5">
+        <h2 className="text-xl sm:text-2xl font-bold mb-5">
           {initialData ? "Edit User" : "New User"}
         </h2>
 
@@ -95,18 +95,19 @@ function UserModal({
             <option value="employee">Employee</option>
           </select>
 
-          <div className="flex justify-end gap-3 pt-3">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-3">
 
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2 rounded-lg bg-gray-200"
+              className="w-full sm:w-auto px-5 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 font-medium"
             >
               Cancel
             </button>
 
             <button
-              className="px-5 py-2 rounded-lg bg-blue-600 text-white"
+              type="submit"
+              className="w-full sm:w-auto px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium"
             >
               Save
             </button>

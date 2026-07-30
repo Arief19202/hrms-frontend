@@ -77,21 +77,21 @@ function Dashboard() {
   return (
     <div className="space-y-8">
 
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
 
         <div>
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-2xl sm:text-3xl font-bold">
             Dashboard
           </h1>
 
-          <p className="text-gray-500">
+          <p className="text-gray-500 text-sm sm:text-base">
             Welcome back to HR Management System
           </p>
         </div>
 
         <button
           onClick={fetchDashboard}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg"
+          className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg"
         >
           Refresh
         </button>

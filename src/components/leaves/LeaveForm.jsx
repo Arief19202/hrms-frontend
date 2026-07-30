@@ -211,7 +211,7 @@ function LeaveForm({
 
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                 <div>
 
@@ -294,12 +294,12 @@ function LeaveForm({
 
             </div>
 
-            <div className="flex justify-end gap-3 pt-4">
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4">
 
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="px-5 py-2 border rounded-lg"
+                    className="w-full sm:w-auto px-5 py-2 border rounded-lg hover:bg-gray-50 font-medium"
                 >
                     Cancel
                 </button>
@@ -307,7 +307,7 @@ function LeaveForm({
                 <button
                     type="submit"
                     disabled={loading}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg disabled:opacity-50"
+                    className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg disabled:opacity-50 font-medium"
                 >
                     {loading
                         ? "Saving..."

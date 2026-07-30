@@ -188,21 +188,21 @@ function Users() {
     <div className="space-y-6">
 
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 
         <div>
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-2xl sm:text-3xl font-bold">
             User Management
           </h1>
 
-          <p className="text-gray-500">
+          <p className="text-gray-500 text-sm sm:text-base">
             Manage HRMS user accounts
           </p>
         </div>
 
         <button
           onClick={handleCreate}
-          className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
+          className="w-full sm:w-auto bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 font-medium"
         >
           + New User
         </button>
@@ -211,21 +211,21 @@ function Users() {
 
       {/* Search */}
 
-      <div className="bg-white p-4 rounded-xl shadow">
+      <div className="bg-white p-4 sm:p-5 rounded-xl shadow">
 
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
 
           <input
             type="text"
             placeholder="Search user..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="border rounded-lg px-4 py-2 flex-1"
+            className="w-full sm:flex-1 border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
           />
 
           <button
             onClick={handleSearch}
-            className="bg-slate-800 text-white px-5 rounded-lg"
+            className="w-full sm:w-auto bg-slate-800 text-white px-5 py-2.5 rounded-lg font-medium"
           >
             Search
           </button>
@@ -237,125 +237,132 @@ function Users() {
       {/* Table */}
 
       <div className="bg-white rounded-xl shadow overflow-hidden">
+        <div className="overflow-x-auto">
 
-        <table className="w-full">
+          <table className="w-full text-left">
 
-          <thead className="bg-gray-100">
-
-            <tr>
-
-              <th className="p-3 text-left">Name</th>
-
-              <th className="p-3 text-left">Email</th>
-
-              <th className="p-3 text-left">Role</th>
-
-              <th className="p-3 text-left">Status</th>
-
-              <th className="p-3 text-center">
-                Actions
-              </th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            {loading ? (
+            <thead className="bg-gray-100">
 
               <tr>
 
-                <td
-                  colSpan={5}
-                  className="text-center py-10"
-                >
-                  Loading...
-                </td>
+                <th className="p-3 text-left whitespace-nowrap">Name</th>
+
+                <th className="p-3 text-left whitespace-nowrap">Email</th>
+
+                <th className="p-3 text-left whitespace-nowrap">Role</th>
+
+                <th className="p-3 text-left whitespace-nowrap">Status</th>
+
+                <th className="p-3 text-center whitespace-nowrap">
+                  Actions
+                </th>
 
               </tr>
 
-            ) : users.length === 0 ? (
+            </thead>
 
-              <tr>
-              <td colSpan={5}>
-                <EmptyState
-                  title="No Users Found"
-                  description="Create your first user to get started."
-                />
-              </td>
-            </tr>
+            <tbody>
 
-            ) : (
+              {loading ? (
 
-              users.map((user) => (
+                <tr>
 
-                <tr
-                  key={user.id}
-                  className="border-t"
-                >
-
-                  <td className="p-3">
-                    {user.name}
-                  </td>
-
-                  <td className="p-3">
-                    {user.email}
-                  </td>
-
-                  <td className="p-3 capitalize">
-                    {user.role}
-                  </td>
-
-                  <td className="p-3">
-
-                  <button
-                    onClick={() => handleToggleStatus(user)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition ${
-                      user.is_active
-                        ? "bg-green-100 text-green-700 hover:bg-green-200"
-                        : "bg-red-100 text-red-700 hover:bg-red-200"
-                    }`}
+                  <td
+                    colSpan={5}
+                    className="text-center py-10"
                   >
-                    {user.is_active ? "Active" : "Inactive"}
-                  </button>
-
-                </td>
-
-                  <td className="p-3 text-center space-x-2">
-
-                    <button
-                      onClick={() => handleEdit(user)}
-                      className="bg-yellow-500 text-white px-3 py-1 rounded"
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      onClick={() => handleResetPassword(user)}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded"
-                    >
-                      Reset Password
-                    </button>
-
-                    <button
-                      onClick={() => handleDelete(user.id)}
-                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
-                    >
-                      Delete
-                    </button>
-
+                    Loading...
                   </td>
 
                 </tr>
 
-              ))
+              ) : users.length === 0 ? (
 
-            )}
+                <tr>
+                <td colSpan={5}>
+                  <EmptyState
+                    title="No Users Found"
+                    description="Create your first user to get started."
+                  />
+                </td>
+              </tr>
 
-          </tbody>
+              ) : (
 
-        </table>
+                users.map((user) => (
+
+                  <tr
+                    key={user.id}
+                    className="border-t text-sm sm:text-base hover:bg-gray-50"
+                  >
+
+                    <td className="p-3 whitespace-nowrap font-medium text-gray-900">
+                      {user.name}
+                    </td>
+
+                    <td className="p-3 whitespace-nowrap text-gray-600">
+                      {user.email}
+                    </td>
+
+                    <td className="p-3 capitalize whitespace-nowrap">
+                      {user.role}
+                    </td>
+
+                    <td className="p-3 whitespace-nowrap">
+
+                      <button
+                        onClick={() => handleToggleStatus(user)}
+                        className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium transition ${
+                          user.is_active
+                            ? "bg-green-100 text-green-700 hover:bg-green-200"
+                            : "bg-red-100 text-red-700 hover:bg-red-200"
+                        }`}
+                      >
+                        {user.is_active ? "Active" : "Inactive"}
+                      </button>
+
+                    </td>
+
+                    <td className="p-3 text-center whitespace-nowrap">
+
+                      <div className="inline-flex gap-2 flex-wrap justify-center">
+
+                        <button
+                          onClick={() => handleEdit(user)}
+                          className="bg-yellow-500 text-white px-3 py-1 rounded text-xs sm:text-sm hover:bg-yellow-600"
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          onClick={() => handleResetPassword(user)}
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-xs sm:text-sm"
+                        >
+                          Reset Password
+                        </button>
+
+                        <button
+                          onClick={() => handleDelete(user.id)}
+                          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs sm:text-sm"
+                        >
+                          Delete
+                        </button>
+
+                      </div>
+
+                    </td>
+
+                  </tr>
+
+                ))
+
+              )}
+
+            </tbody>
+
+          </table>
+
+        </div>
 
         <UserModal
           open={openModal}
@@ -368,17 +375,17 @@ function Users() {
 
       {/* Pagination */}
 
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
 
         <button
           disabled={page === 1}
           onClick={() => setPage(page - 1)}
-          className="bg-gray-200 px-4 py-2 rounded disabled:opacity-50"
+          className="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded disabled:opacity-50 text-sm font-medium"
         >
           Previous
         </button>
 
-        <span>
+        <span className="text-sm text-gray-600">
 
           Page {pagination.page || 1} of{" "}
           {pagination.totalPages || 1}
@@ -388,7 +395,7 @@ function Users() {
         <button
           disabled={page >= (pagination.totalPages || 1)}
           onClick={() => setPage(page + 1)}
-          className="bg-gray-200 px-4 py-2 rounded disabled:opacity-50"
+          className="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded disabled:opacity-50 text-sm font-medium"
         >
           Next
         </button>

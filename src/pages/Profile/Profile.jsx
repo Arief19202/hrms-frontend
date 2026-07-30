@@ -78,9 +78,9 @@ function Profile() {
   return (
     <div className="max-w-2xl mx-auto">
 
-      <div className="bg-white rounded-xl shadow p-8">
+      <div className="bg-white rounded-xl shadow p-4 sm:p-8">
 
-        <h1 className="text-3xl font-bold mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6">
           My Profile
         </h1>
 
@@ -90,7 +90,7 @@ function Profile() {
         >
 
           <div>
-            <label className="block mb-2 font-medium">
+            <label className="block mb-2 font-medium text-gray-700">
               Name
             </label>
 
@@ -98,12 +98,12 @@ function Profile() {
               name="name"
               value={profile.name}
               onChange={handleChange}
-              className="w-full border rounded-lg p-3"
+              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label className="block mb-2 font-medium">
+            <label className="block mb-2 font-medium text-gray-700">
               Email
             </label>
 
@@ -111,12 +111,12 @@ function Profile() {
               name="email"
               value={profile.email}
               onChange={handleChange}
-              className="w-full border rounded-lg p-3"
+              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label className="block mb-2 font-medium">
+            <label className="block mb-2 font-medium text-gray-700">
               Phone
             </label>
 
@@ -124,13 +124,13 @@ function Profile() {
               name="phone"
               value={profile.phone}
               onChange={handleChange}
-              className="w-full border rounded-lg p-3"
+              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <button
             disabled={saving}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg"
+            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition"
           >
             {saving ? "Saving..." : "Update Profile"}
           </button>

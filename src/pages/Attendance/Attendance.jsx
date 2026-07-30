@@ -155,21 +155,21 @@ function Attendance() {
   return (
     <div className="space-y-6">
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 
         <div>
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-2xl sm:text-3xl font-bold">
             Attendance Management
           </h1>
 
-          <p className="text-gray-500">
+          <p className="text-gray-500 text-sm sm:text-base">
             Manage employee attendance records
           </p>
         </div>
 
         <button
           onClick={handleAddAttendance}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg font-semibold"
+          className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg font-semibold"
         >
           + Add Attendance
         </button>

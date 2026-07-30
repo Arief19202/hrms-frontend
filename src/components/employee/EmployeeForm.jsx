@@ -120,7 +120,7 @@ function EmployeeForm({
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
 
         <div>
           <label className="block mb-1 font-medium">
@@ -255,12 +255,12 @@ function EmployeeForm({
 
       </div>
 
-      <div className="flex justify-end gap-3 pt-3">
+      <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-3">
 
         <button
           type="button"
           onClick={onCancel}
-          className="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded-lg"
+          className="w-full sm:w-auto bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded-lg font-medium"
         >
           Cancel
         </button>
@@ -268,7 +268,7 @@ function EmployeeForm({
         <button
           type="submit"
           disabled={loading}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg"
+          className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium"
         >
           {loading
             ? "Saving..."

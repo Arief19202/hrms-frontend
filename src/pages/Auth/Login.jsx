@@ -49,8 +49,8 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white shadow-lg rounded-xl w-full max-w-md p-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+      <div className="bg-white shadow-lg rounded-xl w-full max-w-md p-6 sm:p-8">
 
         <h1 className="text-3xl font-bold text-center mb-2">
           HR Management System
