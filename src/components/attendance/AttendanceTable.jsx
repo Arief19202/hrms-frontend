@@ -1,10 +1,41 @@
 import EmptyState from "../ui/EmptyState";
 
 function AttendanceTable({
-    attendances,
+    attendances = [],
     onEdit,
     onDelete
 }) {
+    const formatTime = (timeStr) => {
+        if (!timeStr) return "-";
+        try {
+            if (timeStr.includes("T") || timeStr.includes("-")) {
+                const d = new Date(timeStr);
+                if (!isNaN(d.getTime())) {
+                    return d.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                        hour12: true,
+                    });
+                }
+            }
+            const parts = timeStr.split(":");
+            if (parts.length >= 2) {
+                const date = new Date();
+                date.setHours(parseInt(parts[0], 10), parseInt(parts[1], 10), 0);
+                return date.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                });
+            }
+            return timeStr;
+        } catch {
+            return timeStr;
+        }
+    };
+
+    const list = attendances || [];
 
     return (
         <div className="bg-white rounded-xl shadow overflow-hidden">
@@ -24,7 +55,7 @@ function AttendanceTable({
                     </thead>
 
                     <tbody>
-                        {!attendances.length ? (
+                        {!list.length ? (
                             <tr>
                                 <td colSpan={8}>
                                     <EmptyState
@@ -34,7 +65,7 @@ function AttendanceTable({
                                 </td>
                             </tr>
                         ) : (
-                            attendances.map((attendance) => (
+                            list.map((attendance) => (
                                 <tr
                                     key={attendance.id}
                                     className="border-t hover:bg-gray-50 text-sm sm:text-base"
