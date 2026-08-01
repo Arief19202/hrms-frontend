@@ -19,9 +19,13 @@ function Dashboard() {
 
   const [error, setError] = useState("");
 
+  const getTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
+
   const fetchDashboard = async () => {
     try {
-      const response = await api.get("/dashboard");
+      const response = await api.get("/dashboard", {
+        params: { timeZone: getTimeZone() }
+      });
       setStatistics(response.data.data);
       setError("");
     } catch (err) {
@@ -36,7 +40,9 @@ function Dashboard() {
     let ignore = false;
     const load = async () => {
       try {
-        const response = await api.get("/dashboard");
+        const response = await api.get("/dashboard", {
+          params: { timeZone: getTimeZone() }
+        });
         if (!ignore) {
           setStatistics(response.data.data);
           setError("");

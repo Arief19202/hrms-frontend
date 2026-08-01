@@ -19,7 +19,7 @@ function DashboardStats({ statistics }) {
             />
 
             <StatCard
-                title="Attendance"
+                title="Today's Attendance"
                 value={statistics.attendance}
                 color="purple"
             />
