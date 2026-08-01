@@ -6,12 +6,14 @@ export const getTodayAttendance = async () => {
 };
 
 export const checkIn = async () => {
-  const { data } = await api.post("/attendance/check-in");
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const { data } = await api.post("/attendance/check-in", { timeZone });
   return data;
 };
 
 export const checkOut = async () => {
-  const { data } = await api.post("/attendance/check-out");
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const { data } = await api.post("/attendance/check-out", { timeZone });
   return data;
 };
 
