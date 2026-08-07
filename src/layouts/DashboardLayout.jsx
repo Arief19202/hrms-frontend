@@ -128,14 +128,20 @@ function DashboardLayout() {
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-slate-50/70 min-w-0 overflow-x-hidden">
-      {/* Backdrop overlay for mobile drawer & dropdowns */}
-      {(mobileOpen || showNotifDropdown) && (
+      {/* Backdrop overlay ONLY for mobile drawer */}
+      {mobileOpen && (
         <div
-          onClick={() => {
-            closeMobileMenu();
-            setShowNotifDropdown(false);
-          }}
-          className="fixed inset-0 bg-slate-950/20 backdrop-blur-xs z-40 transition-opacity"
+          onClick={closeMobileMenu}
+          className="fixed inset-0 bg-slate-950/50 backdrop-blur-xs z-40 lg:hidden transition-opacity"
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Invisible click-outside listener for Notification Dropdown (no dark overlay) */}
+      {showNotifDropdown && (
+        <div
+          onClick={() => setShowNotifDropdown(false)}
+          className="fixed inset-0 z-40 bg-transparent cursor-default"
           aria-hidden="true"
         />
       )}
