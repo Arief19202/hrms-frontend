@@ -10,9 +10,9 @@ import {
 
 import api from "../../api/axios";
 import UserModal from "../../components/users/UserModal";
-import toast from "react-hot-toast";
-import Swal from "sweetalert2";
 import EmptyState from "../../components/ui/EmptyState";
+import notify from "../../utils/notify";
+import Swal from "sweetalert2";
 
 function Users() {
   const [users, setUsers] = useState([]);
@@ -54,7 +54,7 @@ function Users() {
       setPagination(response.pagination);
     } catch (error) {
       console.error(error);
-      alert("Failed to load users.");
+      notify.error("Failed to load users.");
     } finally {
       setLoading(false);
     }
@@ -76,7 +76,7 @@ function Users() {
       } catch (error) {
         if (!ignore) {
           console.error(error);
-          alert("Failed to load users.");
+          notify.error("Failed to load users.");
         }
       } finally {
         if (!ignore) {
@@ -114,43 +114,35 @@ function Users() {
           delete payload.password;
         }
         await updateUser(selectedUser.id, payload);
-        alert("User updated successfully.");
+        notify.success("User updated successfully.");
       } else {
         await createUser(payload);
-        toast.success("User created successfully.");
+        notify.success("User created successfully.");
       }
 
       setOpenModal(false);
       loadUsers();
     } catch (error) {
       console.error(error);
-      alert(error.response?.data?.message || "Failed to save user.");
+      notify.error(error.response?.data?.message || "Failed to save user.");
     }
   };
 
   const handleDelete = async (id) => {
-    const result = await Swal.fire({
+    const confirmed = await notify.confirmDelete({
       title: "Delete User?",
-      text: "This action cannot be undone.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, delete",
-      cancelButtonText: "Cancel",
-      reverseButtons: true,
+      text: "This action cannot be undone. User account will be permanently removed."
     });
 
-    if (!result.isConfirmed) return;
+    if (!confirmed) return;
 
     try {
       await deleteUser(id);
-
-      toast.success("User deleted successfully.");
-
+      notify.success("User deleted successfully.");
       loadUsers();
     } catch (error) {
       console.error(error);
-
-      toast.error(
+      notify.error(
         error.response?.data?.message ||
           "Failed to delete user."
       );
@@ -161,7 +153,7 @@ function Users() {
     try {
       await updateUserStatus(user.id, !user.is_active);
 
-      alert(
+      notify.success(
         `User ${
           !user.is_active ? "activated" : "deactivated"
         } successfully.`
@@ -170,8 +162,7 @@ function Users() {
       loadUsers();
     } catch (error) {
       console.error(error);
-
-      alert(
+      notify.error(
         error.response?.data?.message ||
           "Failed to update user status."
       );
@@ -179,25 +170,43 @@ function Users() {
   };
 
   const handleResetPassword = async (user) => {
-    const password = window.prompt(
-      `Enter new password for ${user.name}`
-    );
+    const { value: password } = await Swal.fire({
+      title: `Reset Password for ${user.name}`,
+      input: "password",
+      inputLabel: "New Password",
+      inputPlaceholder: "Enter new password (min. 6 characters)",
+      inputAttributes: {
+        minlength: "6",
+        autocapitalize: "off",
+        autocorrect: "off"
+      },
+      showCancelButton: true,
+      confirmButtonText: "Reset Password",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#4f46e5",
+      cancelButtonColor: "#64748b",
+      background: "#0f172a",
+      color: "#f8fafc",
+      customClass: {
+        popup: "rounded-2xl border border-slate-800 shadow-2xl",
+        confirmButton: "px-5 py-2.5 rounded-xl font-medium text-sm shadow-md",
+        cancelButton: "px-5 py-2.5 rounded-xl font-medium text-sm shadow-md",
+      },
+    });
 
     if (!password) return;
 
     if (password.length < 6) {
-      alert("Password must be at least 6 characters.");
+      notify.warning("Password must be at least 6 characters.");
       return;
     }
 
     try {
       await resetPassword(user.id, password);
-
-      alert("Password reset successfully.");
+      notify.success(`Password for ${user.name} reset successfully.`);
     } catch (error) {
       console.error(error);
-
-      alert(
+      notify.error(
         error.response?.data?.message ||
         "Failed to reset password."
       );

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import api from "../../api/axios";
+import notify from "../../utils/notify";
 
 function DepartmentForm({
   mode = "add",
@@ -45,7 +46,7 @@ function DepartmentForm({
     if (loading) return;
 
     if (!form.name.trim()) {
-      alert("Department name is required.");
+      notify.warning("Department name is required.");
       return;
     }
 
@@ -54,20 +55,20 @@ function DepartmentForm({
 
       if (mode === "add") {
         await api.post("/departments", form);
+        notify.success("Department created successfully!");
       } else {
         await api.patch(
           `/departments/${department.id}`,
           form
         );
+        notify.success("Department updated successfully!");
       }
 
       onSuccess();
 
     } catch (error) {
       console.error(error);
-
-      alert("Failed to save department.");
-
+      notify.error("Failed to save department.");
     } finally {
       setLoading(false);
     }

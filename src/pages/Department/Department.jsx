@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
+import notify from "../../utils/notify";
 
 import DepartmentTable from "../../components/department/DepartmentTable";
 import DepartmentSearch from "../../components/department/DepartmentSearch";
@@ -7,6 +8,7 @@ import DepartmentPagination from "../../components/department/DepartmentPaginati
 import DepartmentModal from "../../components/department/DepartmentModal";
 import DepartmentForm from "../../components/department/DepartmentForm";
 import DeleteDepartmentModal from "../../components/department/DeleteDepartmentModal";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
 
 function Department() {
   const [departments, setDepartments] = useState([]);
@@ -38,7 +40,6 @@ function Department() {
 
       setDepartments(response.data.data || []);
 
-      // Backend sekarang belum ada pagination
       if (response.data.pagination) {
         setPagination(response.data.pagination);
       } else {
@@ -51,6 +52,7 @@ function Department() {
     } catch (err) {
       console.error(err);
       setError("Failed to load departments.");
+      notify.error("Failed to load departments.");
     } finally {
       setLoading(false);
     }
@@ -78,6 +80,7 @@ function Department() {
         if (!ignore) {
           console.error(err);
           setError("Failed to load departments.");
+          notify.error("Failed to load departments.");
         }
       } finally {
         if (!ignore) {
@@ -116,24 +119,34 @@ function Department() {
   };
 
   // DELETE
-  const handleDeleteClick = (department) => {
-    setSelectedDepartment(department);
-    setDeleteModal(true);
+  const handleDeleteClick = async (department) => {
+    const confirmed = await notify.confirmDelete({
+      title: "Delete Department",
+      text: `Are you sure you want to delete ${department.name}? This action cannot be undone.`
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await api.delete(`/departments/${department.id}`);
+      await fetchDepartments(1, search);
+      notify.success("Department deleted successfully.");
+    } catch (err) {
+      console.error(err);
+      notify.error("Failed to delete department.");
+    }
   };
 
   const handleDeleteDepartment = async () => {
     try {
       await api.delete(`/departments/${selectedDepartment.id}`);
-
       setDeleteModal(false);
       setSelectedDepartment(null);
-
       await fetchDepartments(1, search);
-
-      alert("Department deleted successfully.");
+      notify.success("Department deleted successfully.");
     } catch (err) {
       console.error(err);
-      alert("Failed to delete department.");
+      notify.error("Failed to delete department.");
     }
   };
 
@@ -146,11 +159,7 @@ function Department() {
   };
 
   if (loading) {
-    return (
-      <div className="text-center text-xl font-semibold">
-        Loading Departments...
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (error) {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
+import notify from "../../utils/notify";
 
 function AttendanceForm({
     mode,
@@ -71,30 +72,26 @@ function AttendanceForm({
     }, []);
 
     const handleChange = (e) => {
-
         const { name, value } = e.target;
 
         setFormData((prev) => ({
             ...prev,
             [name]: value
         }));
-
     };
 
     const handleSubmit = async (e) => {
-
         e.preventDefault();
 
         if (
             !formData.employee_id ||
             !formData.attendance_date
         ) {
-            alert("Please fill in all required fields.");
+            notify.warning("Please fill in all required fields.");
             return;
         }
 
         try {
-
             setLoading(true);
 
             const payload = {
@@ -111,35 +108,26 @@ function AttendanceForm({
             };
 
             if (mode === "add") {
-
                 await api.post("/attendances", payload);
-
+                notify.success("Attendance logged successfully!");
             } else {
-
                 await api.patch(
                     `/attendances/${attendance.id}`,
                     payload
                 );
-
+                notify.success("Attendance updated successfully!");
             }
 
             onSuccess();
-
         } catch (error) {
-
             console.error(error);
-
-            alert(
+            notify.error(
                 error.response?.data?.message ||
                 "Failed to save attendance."
             );
-
         } finally {
-
             setLoading(false);
-
         }
-
     };
 
     return (

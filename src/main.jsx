@@ -11,7 +11,15 @@ createRoot(document.getElementById("root")).render(
 
     <Toaster
       position="top-right"
-      reverseOrder={false}
+      toastOptions={{
+        duration: 3500,
+        style: {
+          background: '#0f172a',
+          color: '#f8fafc',
+          borderRadius: '0.75rem',
+          fontSize: '0.875rem',
+        },
+      }}
     />
   </StrictMode>
 );

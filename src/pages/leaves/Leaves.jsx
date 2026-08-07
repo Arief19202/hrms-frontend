@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import api from "../../api/axios";
+import notify from "../../utils/notify";
 
 import LeaveTable from "../../components/leaves/LeaveTable";
 import LeaveModal from "../../components/leaves/LeaveModal";
@@ -19,56 +20,32 @@ function Leave() {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const fetchLeaves = useCallback(async () => {
-
         try {
-
             const response = await api.get("/leaves");
-
             const data = response.data.data || [];
 
             if (search.trim() === "") {
-
                 setLeaves(data);
-
             } else {
-
                 const keyword = search.toLowerCase();
-
                 const filtered = data.filter((leave) => {
-
-                    const employee =
-                        leave.employees?.name?.toLowerCase() || "";
-
-                    const type =
-                        leave.leave_type?.toLowerCase() || "";
-
-                    const status =
-                        leave.status?.toLowerCase() || "";
-
+                    const employee = leave.employees?.name?.toLowerCase() || "";
+                    const type = leave.leave_type?.toLowerCase() || "";
+                    const status = leave.status?.toLowerCase() || "";
                     return (
                         employee.includes(keyword) ||
                         type.includes(keyword) ||
                         status.includes(keyword)
                     );
-
                 });
-
                 setLeaves(filtered);
-
             }
-
         } catch (error) {
-
             console.error(error);
-
-            alert("Failed to load leave requests.");
-
+            notify.error("Failed to load leave requests.");
         } finally {
-
             setLoading(false);
-
         }
-
     }, [search]);
 
     useEffect(() => {
@@ -98,7 +75,7 @@ function Leave() {
             } catch (error) {
                 if (!ignore) {
                     console.error(error);
-                    alert("Failed to load leave requests.");
+                    notify.error("Failed to load leave requests.");
                 }
             } finally {
                 if (!ignore) {
@@ -113,49 +90,45 @@ function Leave() {
     }, [search]);
 
     const openAddModal = () => {
-
         setModalMode("add");
         setSelectedLeave(null);
         setShowModal(true);
-
     };
 
     const openEditModal = (leave) => {
-
         setModalMode("edit");
         setSelectedLeave(leave);
         setShowModal(true);
-
     };
 
-    const openDeleteModal = (leave) => {
+    const openDeleteModal = async (leave) => {
+        const confirmed = await notify.confirmDelete({
+            title: "Delete Leave Request",
+            text: "Are you sure you want to delete this leave request? This cannot be undone."
+        });
 
-        setSelectedLeave(leave);
-        setShowDeleteModal(true);
+        if (!confirmed) return;
 
+        try {
+            await api.delete(`/leaves/${leave.id}`);
+            fetchLeaves();
+            notify.success("Leave request deleted.");
+        } catch (error) {
+            console.error(error);
+            notify.error(error.response?.data?.message || "Failed to delete leave.");
+        }
     };
 
     const handleDelete = async () => {
-
         try {
-
             await api.delete(`/leaves/${selectedLeave.id}`);
-
             setShowDeleteModal(false);
-
             fetchLeaves();
-
+            notify.success("Leave request deleted successfully.");
         } catch (error) {
-
             console.error(error);
-
-            alert(
-                error.response?.data?.message ||
-                "Failed to delete leave."
-            );
-
+            notify.error(error.response?.data?.message || "Failed to delete leave.");
         }
-
     };
 
     const getReviewerId = () => {
@@ -172,51 +145,33 @@ function Leave() {
     };
 
     const approveLeave = async (id) => {
-
         try {
-
             await api.patch(`/leaves/${id}/status`, {
                 status: "approved",
                 reviewed_by: getReviewerId()
             });
 
+            notify.success("Leave request approved.");
             fetchLeaves();
-
         } catch (error) {
-
             console.error(error);
-
-            alert(
-                error.response?.data?.message ||
-                "Failed to approve leave."
-            );
-
+            notify.error(error.response?.data?.message || "Failed to approve leave.");
         }
-
     };
 
     const rejectLeave = async (id) => {
-
         try {
-
             await api.patch(`/leaves/${id}/status`, {
                 status: "rejected",
                 reviewed_by: getReviewerId()
             });
 
+            notify.success("Leave request rejected.");
             fetchLeaves();
-
         } catch (error) {
-
             console.error(error);
-
-            alert(
-                error.response?.data?.message ||
-                "Failed to reject leave."
-            );
-
+            notify.error(error.response?.data?.message || "Failed to reject leave.");
         }
-
     };
 
     return (

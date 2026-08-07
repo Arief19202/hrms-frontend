@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
+import notify from "../../utils/notify";
 
 import AttendanceTable from "../../components/attendance/AttendanceTable";
 import AttendanceSearch from "../../components/attendance/AttendanceSearch";
@@ -7,6 +8,7 @@ import AttendancePagination from "../../components/attendance/AttendancePaginati
 import AttendanceModal from "../../components/attendance/AttendanceModal";
 import AttendanceForm from "../../components/attendance/AttendanceForm";
 import DeleteAttendanceModal from "../../components/attendance/DeleteAttendanceModal";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
 
 function Attendance() {
   const [attendances, setAttendances] = useState([]);
@@ -48,6 +50,7 @@ function Attendance() {
     } catch (err) {
       console.error(err);
       setError("Failed to load attendances.");
+      notify.error("Failed to load attendances.");
     } finally {
       setLoading(false);
     }
@@ -73,6 +76,7 @@ function Attendance() {
         if (!ignore) {
           console.error(err);
           setError("Failed to load attendances.");
+          notify.error("Failed to load attendances.");
         }
       } finally {
         if (!ignore) {
@@ -108,24 +112,34 @@ function Attendance() {
     setOpenModal(true);
   };
 
-  const handleDeleteClick = (attendance) => {
-    setSelectedAttendance(attendance);
-    setDeleteModal(true);
+  const handleDeleteClick = async (attendance) => {
+    const confirmed = await notify.confirmDelete({
+      title: "Delete Attendance Log",
+      text: "Are you sure you want to delete this attendance record? This cannot be undone."
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await api.delete(`/attendances/${attendance.id}`);
+      await fetchAttendances(1, search);
+      notify.success("Attendance deleted successfully.");
+    } catch (err) {
+      console.error(err);
+      notify.error("Failed to delete attendance.");
+    }
   };
 
   const handleDeleteAttendance = async () => {
     try {
       await api.delete(`/attendances/${selectedAttendance.id}`);
-
       setDeleteModal(false);
       setSelectedAttendance(null);
-
       await fetchAttendances(1, search);
-
-      alert("Attendance deleted successfully.");
+      notify.success("Attendance deleted successfully.");
     } catch (err) {
       console.error(err);
-      alert("Failed to delete attendance.");
+      notify.error("Failed to delete attendance.");
     }
   };
 
@@ -137,11 +151,7 @@ function Attendance() {
   };
 
   if (loading) {
-    return (
-      <div className="text-center text-xl font-semibold">
-        Loading Attendances...
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (error) {

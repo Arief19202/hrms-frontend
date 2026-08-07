@@ -10,6 +10,7 @@ import {
   EyeSlashIcon
 } from "@heroicons/react/24/outline";
 import api from "../../api/axios";
+import notify from "../../utils/notify";
 
 function Login() {
   const navigate = useNavigate();
@@ -35,6 +36,8 @@ function Login() {
       localStorage.setItem("token", response.data.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.data.user));
 
+      notify.success("Welcome back! Login successful.");
+
       const role = response.data.data.user?.role;
       if (role === "employee") {
         navigate("/profile");
@@ -43,11 +46,9 @@ function Login() {
       }
     } catch (error) {
       console.error(error);
-      if (error.response?.data?.message) {
-        setErrorMessage(error.response.data.message);
-      } else {
-        setErrorMessage("Unable to connect to server. Please try again.");
-      }
+      const msg = error.response?.data?.message || "Unable to connect to server. Please try again.";
+      setErrorMessage(msg);
+      notify.error(msg);
     } finally {
       setLoading(false);
     }

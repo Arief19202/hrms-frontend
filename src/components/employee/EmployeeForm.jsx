@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
+import notify from "../../utils/notify";
 
 function EmployeeForm({
   mode = "add",
@@ -90,20 +91,21 @@ function EmployeeForm({
     try {
       if (mode === "add") {
         await api.post("/employees", form);
+        notify.success("Employee added successfully!");
       } else {
         await api.patch(`/employees/${employee.id}`, form);
+        notify.success("Employee details updated!");
       }
 
       onSuccess();
-
     } catch (error) {
-
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);
+        notify.error("Please resolve validation errors below.");
       } else {
-        alert(error.response?.data?.message || "Something went wrong.");
+        const msg = error.response?.data?.message || "Something went wrong.";
+        notify.error(msg);
       }
-
     } finally {
       setLoading(false);
     }

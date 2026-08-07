@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
+import notify from "../../utils/notify";
 
 function LeaveForm({
     mode,
@@ -67,18 +68,15 @@ function LeaveForm({
     }, []);
 
     const handleChange = (e) => {
-
         const { name, value } = e.target;
 
         setFormData((prev) => ({
             ...prev,
             [name]: value
         }));
-
     };
 
     const handleSubmit = async (e) => {
-
         e.preventDefault();
 
         if (
@@ -86,15 +84,11 @@ function LeaveForm({
             !formData.start_date ||
             !formData.end_date
         ) {
-
-            alert("Please fill in all required fields.");
-
+            notify.warning("Please fill in all required fields.");
             return;
-
         }
 
         try {
-
             setLoading(true);
 
             const payload = {
@@ -107,35 +101,26 @@ function LeaveForm({
             };
 
             if (mode === "add") {
-
                 await api.post("/leaves", payload);
-
+                notify.success("Leave request created successfully!");
             } else {
-
                 await api.patch(
                     `/leaves/${leave.id}`,
                     payload
                 );
-
+                notify.success("Leave request updated successfully!");
             }
 
             onSuccess();
-
         } catch (error) {
-
             console.error(error);
-
-            alert(
+            notify.error(
                 error.response?.data?.message ||
                 "Failed to save leave request."
             );
-
         } finally {
-
             setLoading(false);
-
         }
-
     };
 
     return (

@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import notify from "../../utils/notify";
 import {
   getTodayAttendance,
   getMyAttendanceHistory,
@@ -82,15 +83,10 @@ function MyAttendance() {
     try {
       setActionLoading(true);
       await checkIn();
-
-      alert("Clock In Successful");
-
+      notify.success("Clock In Successful! Have a productive shift.");
       loadAttendance();
     } catch (error) {
-      alert(
-        error.response?.data?.message ||
-          "Clock In Failed"
-      );
+      notify.error(error.response?.data?.message || "Clock In Failed.");
     } finally {
       setActionLoading(false);
     }
@@ -101,15 +97,10 @@ function MyAttendance() {
     try {
       setActionLoading(true);
       await checkOut();
-
-      alert("Clock Out Successful");
-
+      notify.success("Clock Out Successful! See you next shift.");
       loadAttendance();
     } catch (error) {
-      alert(
-        error.response?.data?.message ||
-          "Clock Out Failed"
-      );
+      notify.error(error.response?.data?.message || "Clock Out Failed.");
     } finally {
       setActionLoading(false);
     }

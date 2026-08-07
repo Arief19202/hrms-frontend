@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import notify from "../../utils/notify";
 import {
   getMyLeaves,
   applyLeave,
@@ -29,7 +30,7 @@ function MyLeave() {
       }
     } catch (error) {
       console.error(error);
-      alert("Failed to load leave records.");
+      notify.error("Failed to load leave records.");
     }
   }, []);
 
@@ -51,7 +52,7 @@ function MyLeave() {
       } catch (error) {
         if (!ignore) {
           console.error(error);
-          alert("Failed to load leave records.");
+          notify.error("Failed to load leave records.");
         }
       }
     };
@@ -94,12 +95,12 @@ function MyLeave() {
     if (isSubmitting) return;
 
     if (!form.start_date || !form.end_date) {
-      alert("Please select both start date and end date.");
+      notify.warning("Please select both start date and end date.");
       return;
     }
 
     if (form.end_date < form.start_date) {
-      alert("End date cannot be earlier than start date.");
+      notify.warning("End date cannot be earlier than start date.");
       return;
     }
 
@@ -107,12 +108,12 @@ function MyLeave() {
 
     if (form.leave_type === "annual") {
       if (availableBalance <= 0) {
-        alert("Your annual leave balance is 0. You cannot submit an annual leave request.");
+        notify.warning("Your annual leave balance is 0. You cannot submit an annual leave request.");
         return;
       }
 
       if (daysCount && daysCount > availableBalance) {
-        alert(
+        notify.warning(
           `Requested leave duration (${daysCount} days) exceeds remaining annual leave balance (${availableBalance} days).`
         );
         return;
@@ -127,7 +128,7 @@ function MyLeave() {
         total_days: daysCount || 1,
       });
 
-      alert("Leave request submitted successfully.");
+      notify.success("Leave request submitted successfully.");
 
       setForm({
         leave_type: "annual",
@@ -139,8 +140,7 @@ function MyLeave() {
       loadLeaves();
     } catch (error) {
       console.error(error);
-
-      alert(
+      notify.error(
         error.response?.data?.message ||
         "Failed to submit leave."
       );

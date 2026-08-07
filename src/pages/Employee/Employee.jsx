@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
+import notify from "../../utils/notify";
 
 import EmployeeTable from "../../components/employee/EmployeeTable";
 import EmployeeSearch from "../../components/employee/EmployeeSearch";
@@ -7,6 +8,7 @@ import EmployeePagination from "../../components/employee/EmployeePagination";
 import EmployeeModal from "../../components/employee/EmployeeModal";
 import EmployeeForm from "../../components/employee/EmployeeForm";
 import DeleteEmployeeModal from "../../components/employee/DeleteEmployeeModal";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
 
 function Employee() {
   const [employees, setEmployees] = useState([]);
@@ -46,6 +48,7 @@ function Employee() {
     } catch (err) {
       console.error(err);
       setError("Failed to load employees.");
+      notify.error("Failed to load employees.");
     } finally {
       setLoading(false);
     }
@@ -73,6 +76,7 @@ function Employee() {
         if (!ignore) {
           console.error(err);
           setError("Failed to load initial data.");
+          notify.error("Failed to load initial employee data.");
         }
       } finally {
         if (!ignore) {
@@ -138,24 +142,34 @@ function Employee() {
   // ==========================
   // DELETE
   // ==========================
-  const handleDeleteClick = (employee) => {
-    setSelectedEmployee(employee);
-    setDeleteModal(true);
+  const handleDeleteClick = async (employee) => {
+    const confirmed = await notify.confirmDelete({
+      title: "Delete Employee",
+      text: `Are you sure you want to delete ${employee.name}? This action cannot be undone.`
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await api.delete(`/employees/${employee.id}`);
+      fetchEmployees(pagination.page || 1, search, departmentFilter, statusFilter);
+      notify.success("Employee deleted successfully.");
+    } catch (error) {
+      console.error(error);
+      notify.error("Failed to delete employee.");
+    }
   };
 
   const handleDeleteEmployee = async () => {
     try {
-      await api.delete(`/employees/${selectedEmployee.id}`);
-
+      await api.delete(`/selectedEmployee.id`);
       setDeleteModal(false);
       setSelectedEmployee(null);
-
       fetchEmployees(pagination.page || 1, search, departmentFilter, statusFilter);
-
-      alert("Employee deleted successfully.");
+      notify.success("Employee deleted successfully.");
     } catch (error) {
       console.error(error);
-      alert("Failed to delete employee.");
+      notify.error("Failed to delete employee.");
     }
   };
 

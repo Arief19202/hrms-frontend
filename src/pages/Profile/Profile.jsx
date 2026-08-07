@@ -3,6 +3,8 @@ import {
   getProfile,
   updateProfile,
 } from "../../services/profileService";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import notify from "../../utils/notify";
 
 function Profile() {
   const [profile, setProfile] = useState({
@@ -29,7 +31,7 @@ function Profile() {
       } catch (error) {
         if (!ignore) {
           console.error(error);
-          alert("Failed to load profile.");
+          notify.error("Failed to load profile details.");
         }
       } finally {
         if (!ignore) {
@@ -55,14 +57,11 @@ function Profile() {
 
     try {
       setSaving(true);
-
       await updateProfile(profile);
-
-      alert("Profile updated successfully.");
+      notify.success("Profile updated successfully.");
     } catch (error) {
       console.error(error);
-
-      alert(
+      notify.error(
         error.response?.data?.message ||
           "Failed to update profile."
       );
@@ -72,7 +71,7 @@ function Profile() {
   };
 
   if (loading) {
-    return <p>Loading profile...</p>;
+    return <LoadingSpinner />;
   }
 
   return (
