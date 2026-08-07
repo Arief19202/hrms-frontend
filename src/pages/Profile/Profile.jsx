@@ -148,9 +148,9 @@ function Profile() {
                   </span>
                 )}
 
-                {profileData?.departments?.name && (
+                {(profileData?.departments?.name || profileData?.department_name) && (
                   <span className="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-medium">
-                    🏢 {profileData.departments.name}
+                    🏢 {profileData?.departments?.name || profileData?.department_name}
                   </span>
                 )}
               </div>
@@ -281,7 +281,7 @@ function Profile() {
             <div className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100">
               <span className="text-slate-500 font-semibold uppercase">Department</span>
               <span className="font-bold text-slate-800">
-                {profileData?.departments?.name || "General"}
+                {profileData?.departments?.name || profileData?.department?.name || profileData?.department_name || "N/A"}
               </span>
             </div>
 
