@@ -7,7 +7,6 @@ import DepartmentSearch from "../../components/department/DepartmentSearch";
 import DepartmentPagination from "../../components/department/DepartmentPagination";
 import DepartmentModal from "../../components/department/DepartmentModal";
 import DepartmentForm from "../../components/department/DepartmentForm";
-import DeleteDepartmentModal from "../../components/department/DeleteDepartmentModal";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 
 function Department() {
@@ -25,7 +24,6 @@ function Department() {
   const [search, setSearch] = useState("");
 
   const [openModal, setOpenModal] = useState(false);
-  const [deleteModal, setDeleteModal] = useState(false);
 
   const [mode, setMode] = useState("add");
   const [selectedDepartment, setSelectedDepartment] = useState(null);
@@ -118,38 +116,6 @@ function Department() {
     setOpenModal(true);
   };
 
-  // DELETE
-  const handleDeleteClick = async (department) => {
-    const confirmed = await notify.confirmDelete({
-      title: "Delete Department",
-      text: `Are you sure you want to delete ${department.name}? This action cannot be undone.`
-    });
-
-    if (!confirmed) return;
-
-    try {
-      await api.delete(`/departments/${department.id}`);
-      await fetchDepartments(1, search);
-      notify.success("Department deleted successfully.");
-    } catch (err) {
-      console.error(err);
-      notify.error("Failed to delete department.");
-    }
-  };
-
-  const handleDeleteDepartment = async () => {
-    try {
-      await api.delete(`/departments/${selectedDepartment.id}`);
-      setDeleteModal(false);
-      setSelectedDepartment(null);
-      await fetchDepartments(1, search);
-      notify.success("Department deleted successfully.");
-    } catch (err) {
-      console.error(err);
-      notify.error("Failed to delete department.");
-    }
-  };
-
   // AFTER SAVE
   const handleSuccess = async () => {
     setOpenModal(false);
@@ -186,7 +152,7 @@ function Department() {
 
         <button
           onClick={handleAddDepartment}
-          className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg font-semibold"
+          className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg font-semibold transition"
         >
           + Add Department
         </button>
@@ -203,7 +169,6 @@ function Department() {
       <DepartmentTable
         departments={departments}
         onEdit={handleEditDepartment}
-        onDelete={handleDeleteClick}
       />
 
       {/* Pagination */}
@@ -235,17 +200,6 @@ function Department() {
           }}
         />
       </DepartmentModal>
-
-      {/* Delete */}
-      <DeleteDepartmentModal
-        open={deleteModal}
-        department={selectedDepartment}
-        onClose={() => {
-          setDeleteModal(false);
-          setSelectedDepartment(null);
-        }}
-        onConfirm={handleDeleteDepartment}
-      />
     </div>
   );
 }

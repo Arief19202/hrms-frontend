@@ -13,8 +13,8 @@ import {
   ArrowRightStartOnRectangleIcon,
   Bars3Icon,
   XMarkIcon,
-  SparklesIcon,
-  BuildingOffice2Icon
+  BuildingOffice2Icon,
+  ClipboardDocumentListIcon
 } from "@heroicons/react/24/outline";
 
 function DashboardLayout() {
@@ -25,8 +25,6 @@ function DashboardLayout() {
 
   const userData = localStorage.getItem("user");
   const user = userData ? JSON.parse(userData) : null;
-
-  const userKey = user?.id || "guest";
 
   useEffect(() => {
     const dateStr = new Date().toLocaleDateString("en-US", {
@@ -58,6 +56,7 @@ function DashboardLayout() {
     if (path === "/attendance") return "Attendance Tracker";
     if (path === "/leave") return "Leave Requests";
     if (path === "/users") return "User Management";
+    if (path === "/audit-logs") return "Audit Logs";
     if (path === "/profile") return "My Profile";
     if (path === "/my-attendance") return "My Attendance Logs";
     if (path === "/my-leave") return "My Leave Applications";
@@ -226,6 +225,20 @@ function DashboardLayout() {
                       {renderActiveIndicator(isActive)}
                       <UsersIcon className={`w-5 h-5 shrink-0 ${isActive ? "text-indigo-400" : "text-slate-400 group-hover:text-slate-200"}`} />
                       <span>User Control</span>
+                    </>
+                  )}
+                </NavLink>
+
+                <NavLink
+                  to="/audit-logs"
+                  onClick={closeMobileMenu}
+                  className={({ isActive }) => navItemClass(isActive)}
+                >
+                  {({ isActive }) => (
+                    <>
+                      {renderActiveIndicator(isActive)}
+                      <ClipboardDocumentListIcon className={`w-5 h-5 shrink-0 ${isActive ? "text-indigo-400" : "text-slate-400 group-hover:text-slate-200"}`} />
+                      <span>Audit Logs</span>
                     </>
                   )}
                 </NavLink>

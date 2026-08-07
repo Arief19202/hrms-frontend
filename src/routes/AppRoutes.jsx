@@ -10,6 +10,7 @@ import Leave from "../pages/leaves/Leaves";
 
 // ===== New Pages =====
 import Users from "../pages/Users/Users";
+import AuditLog from "../pages/AuditLog/AuditLog";
 import Profile from "../pages/Profile/Profile";
 import MyAttendance from "../pages/MyAttendance/MyAttendance";
 import MyLeave from "../pages/MyLeave/MyLeave";
@@ -42,8 +43,9 @@ function AppRoutes() {
           <Route path="/attendance" element={<Attendance />} />
           <Route path="/leave" element={<Leave />} />
 
-          {/* User Management */}
+          {/* User Management & System */}
           <Route path="/users" element={<Users />} />
+          <Route path="/audit-logs" element={<AuditLog />} />
 
           {/* Employee Self Service */}
           <Route path="/profile" element={<Profile />} />
