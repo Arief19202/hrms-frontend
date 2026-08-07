@@ -71,6 +71,10 @@ function AuditLog() {
 
   useEffect(() => {
     fetchLogs();
+    const timer = setInterval(() => {
+      fetchLogs();
+    }, 10000); // Live real-time polling every 10 seconds
+    return () => clearInterval(timer);
   }, [fetchLogs]);
 
   const handleResetFilters = () => {
@@ -125,6 +129,12 @@ function AuditLog() {
     if (!action) return "bg-gray-100 text-gray-700 border-gray-300";
     const act = action.toUpperCase();
 
+    if (act === "LOGIN") {
+      return "bg-emerald-100 text-emerald-800 border-emerald-300 font-bold";
+    }
+    if (act === "LOGOUT") {
+      return "bg-rose-100 text-rose-800 border-rose-300 font-bold";
+    }
     if (act.includes("CREATE") || act.includes("REGISTER") || act === "CLOCK_IN") {
       return "bg-emerald-50 text-emerald-700 border-emerald-200";
     }
@@ -134,7 +144,7 @@ function AuditLog() {
     if (act.includes("DELETE") || act.includes("REMOVE") || act.includes("REJECT")) {
       return "bg-rose-50 text-rose-700 border-rose-200";
     }
-    if (act.includes("APPROVE") || act === "LOGIN") {
+    if (act.includes("APPROVE")) {
       return "bg-indigo-50 text-indigo-700 border-indigo-200";
     }
     if (act.includes("RESET") || act.includes("STATUS") || act === "CLOCK_OUT") {
@@ -297,6 +307,7 @@ function AuditLog() {
             >
               <option value="ALL">All Actions</option>
               <option value="LOGIN">LOGIN</option>
+              <option value="LOGOUT">LOGOUT</option>
               <option value="REGISTER">REGISTER</option>
               <option value="CREATE_USER">CREATE_USER</option>
               <option value="UPDATE_USER">UPDATE_USER</option>

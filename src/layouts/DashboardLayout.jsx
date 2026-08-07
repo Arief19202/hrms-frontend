@@ -36,7 +36,12 @@ function DashboardLayout() {
     setCurrentDate(dateStr);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch (e) {
+      // Ignore API logout error
+    }
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setMobileOpen(false);
