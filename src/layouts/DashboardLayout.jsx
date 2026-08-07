@@ -87,7 +87,7 @@ function DashboardLayout() {
       .slice(0, 2);
   };
 
-  const [notifications, setNotifications] = useState([
+  const INITIAL_NOTIFICATIONS = [
     {
       id: 1,
       title: "Backend API Connected",
@@ -112,21 +112,42 @@ function DashboardLayout() {
       type: "leave",
       unread: false
     }
-  ]);
+  ];
+
+  const [notifications, setNotifications] = useState(() => {
+    try {
+      const saved = localStorage.getItem("hrms_notifications");
+      return saved ? JSON.parse(saved) : INITIAL_NOTIFICATIONS;
+    } catch {
+      return INITIAL_NOTIFICATIONS;
+    }
+  });
 
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
 
   const unreadCount = notifications.filter((n) => n.unread).length;
 
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
+  const saveNotifications = (newList) => {
+    setNotifications(newList);
+    try {
+      localStorage.setItem("hrms_notifications", JSON.stringify(newList));
+    } catch (err) {
+      console.error("Failed to save notifications:", err);
+    }
+  };
+
+  const markAllAsRead = (e) => {
+    if (e) e.stopPropagation();
+    const updated = notifications.map((n) => ({ ...n, unread: false }));
+    saveNotifications(updated);
     notify.info("All notifications marked as read.");
   };
 
   const markAsRead = (id) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, unread: false } : n))
+    const updated = notifications.map((n) =>
+      n.id === id ? { ...n, unread: false } : n
     );
+    saveNotifications(updated);
   };
 
   return (
@@ -435,8 +456,12 @@ function DashboardLayout() {
                     </div>
                     {unreadCount > 0 && (
                       <button
-                        onClick={markAllAsRead}
-                        className="text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          markAllAsRead(e);
+                        }}
+                        className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 cursor-pointer"
                       >
                         Mark all as read
                       </button>
