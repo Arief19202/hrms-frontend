@@ -7,6 +7,7 @@ import DepartmentSearch from "../../components/department/DepartmentSearch";
 import DepartmentPagination from "../../components/department/DepartmentPagination";
 import DepartmentModal from "../../components/department/DepartmentModal";
 import DepartmentForm from "../../components/department/DepartmentForm";
+import DeleteDepartmentModal from "../../components/department/DeleteDepartmentModal";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 
 function Department() {
@@ -24,6 +25,7 @@ function Department() {
   const [search, setSearch] = useState("");
 
   const [openModal, setOpenModal] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
 
   const [mode, setMode] = useState("add");
   const [selectedDepartment, setSelectedDepartment] = useState(null);
@@ -50,7 +52,9 @@ function Department() {
     } catch (err) {
       console.error(err);
       setError("Failed to load departments.");
-      notify.error("Failed to load departments.");
+      if (typeof notify?.error === "function") {
+        notify.error("Failed to load departments.");
+      }
     } finally {
       setLoading(false);
     }
@@ -78,7 +82,9 @@ function Department() {
         if (!ignore) {
           console.error(err);
           setError("Failed to load departments.");
-          notify.error("Failed to load departments.");
+          if (typeof notify?.error === "function") {
+            notify.error("Failed to load departments.");
+          }
         }
       } finally {
         if (!ignore) {
@@ -114,6 +120,36 @@ function Department() {
     setMode("edit");
     setSelectedDepartment(department);
     setOpenModal(true);
+  };
+
+  // DELETE CLICK
+  const handleDeleteClick = (department) => {
+    setSelectedDepartment(department);
+    setDeleteModal(true);
+  };
+
+  // DELETE CONFIRM
+  const handleDeleteDepartment = async () => {
+    if (!selectedDepartment) return;
+    try {
+      await api.delete(`/departments/${selectedDepartment.id}`);
+      setDeleteModal(false);
+      setSelectedDepartment(null);
+      await fetchDepartments(1, search);
+      if (typeof notify?.success === "function") {
+        notify.success("Department deleted successfully.");
+      } else {
+        alert("Department deleted successfully.");
+      }
+    } catch (err) {
+      console.error(err);
+      const msg = err.response?.data?.message || "Failed to delete department.";
+      if (typeof notify?.error === "function") {
+        notify.error(msg);
+      } else {
+        alert(msg);
+      }
+    }
   };
 
   // AFTER SAVE
@@ -169,6 +205,7 @@ function Department() {
       <DepartmentTable
         departments={departments}
         onEdit={handleEditDepartment}
+        onDelete={handleDeleteClick}
       />
 
       {/* Pagination */}
@@ -177,7 +214,7 @@ function Department() {
         onPageChange={handlePageChange}
       />
 
-      {/* Add / Edit */}
+      {/* Add / Edit Modal */}
       <DepartmentModal
         open={openModal}
         title={
@@ -200,6 +237,17 @@ function Department() {
           }}
         />
       </DepartmentModal>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteDepartmentModal
+        open={deleteModal}
+        department={selectedDepartment}
+        onClose={() => {
+          setDeleteModal(false);
+          setSelectedDepartment(null);
+        }}
+        onConfirm={handleDeleteDepartment}
+      />
     </div>
   );
 }

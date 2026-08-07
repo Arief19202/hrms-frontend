@@ -3,6 +3,7 @@ import EmptyState from "../ui/EmptyState";
 function DepartmentTable({
   departments = [],
   onEdit,
+  onDelete,
 }) {
   // Guarantee sorting by ID in ascending order (1, 2, 3, 4, 5...)
   const sortedDepartments = [...departments].sort(
@@ -65,9 +66,15 @@ function DepartmentTable({
                     <div className="flex justify-center gap-2">
                       <button
                         onClick={() => onEdit(department)}
-                        className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition"
+                        className="bg-amber-500 hover:bg-amber-600 text-white px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition"
                       >
                         Edit
+                      </button>
+                      <button
+                        onClick={() => onDelete(department)}
+                        className="bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition"
+                      >
+                        Delete
                       </button>
                     </div>
                   </td>
