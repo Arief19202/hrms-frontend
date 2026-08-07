@@ -18,6 +18,7 @@ import {
   BuildingOffice2Icon
 } from "@heroicons/react/24/outline";
 
+import api from "../api/axios";
 import notify from "../utils/notify";
 
 function DashboardLayout() {
@@ -28,6 +29,8 @@ function DashboardLayout() {
 
   const userData = localStorage.getItem("user");
   const user = userData ? JSON.parse(userData) : null;
+
+  const userKey = user?.id || "guest";
 
   useEffect(() => {
     const dateStr = new Date().toLocaleDateString("en-US", {
@@ -87,67 +90,153 @@ function DashboardLayout() {
       .slice(0, 2);
   };
 
-  const INITIAL_NOTIFICATIONS = [
-    {
-      id: 1,
-      title: "Backend API Connected",
-      message: "HRMS Server is active & synchronized",
-      time: "Just now",
-      type: "system",
-      unread: true
-    },
-    {
-      id: 2,
-      title: "Daily Attendance Tracker",
-      message: "Clock In window active for today's shift",
-      time: "8:00 AM",
-      type: "attendance",
-      unread: true
-    },
-    {
-      id: 3,
-      title: "Leave Policy Update",
-      message: "Check remaining annual leave balance in Self Service",
-      time: "Today",
-      type: "leave",
-      unread: false
-    }
-  ];
-
-  const [notifications, setNotifications] = useState(() => {
+  // Dynamic Notifications Engine
+  const [rawNotifs, setRawNotifs] = useState([]);
+  const [readNotifIds, setReadNotifIds] = useState(() => {
     try {
-      const saved = localStorage.getItem("hrms_notifications");
-      return saved ? JSON.parse(saved) : INITIAL_NOTIFICATIONS;
+      const saved = localStorage.getItem(`hrms_read_notifs_${userKey}`);
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_NOTIFICATIONS;
+      return [];
     }
   });
 
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
 
-  const unreadCount = notifications.filter((n) => n.unread).length;
+  useEffect(() => {
+    let isMounted = true;
 
-  const saveNotifications = (newList) => {
-    setNotifications(newList);
-    try {
-      localStorage.setItem("hrms_notifications", JSON.stringify(newList));
-    } catch (err) {
-      console.error("Failed to save notifications:", err);
-    }
-  };
+    const loadRealNotifications = async () => {
+      try {
+        const notifList = [];
+
+        // 1. Fetch Leaves for HR/Admin or Employee
+        if (user?.role === "admin" || user?.role === "hr") {
+          const res = await api.get("/leaves").catch(() => null);
+          if (res?.data?.data) {
+            const leaves = res.data.data;
+            leaves.slice(0, 10).forEach((item) => {
+              const empName = item.employees?.name || "Employee";
+              const typeStr = item.leave_type
+                ? item.leave_type.toUpperCase()
+                : "LEAVE";
+
+              let title = `📄 ${empName} applied for ${typeStr}`;
+              let message = `Requested leave from ${item.start_date} to ${item.end_date} (Status: ${item.status || "pending"})`;
+
+              if (item.status === "approved") {
+                title = `✅ ${empName}'s ${typeStr} Approved`;
+                message = `Leave request from ${item.start_date} to ${item.end_date} has been Approved`;
+              } else if (item.status === "rejected") {
+                title = `❌ ${empName}'s ${typeStr} Rejected`;
+                message = `Leave request from ${item.start_date} to ${item.end_date} was Rejected`;
+              }
+
+              notifList.push({
+                id: `leave_${item.id}_${item.status}`,
+                title,
+                message,
+                time: item.created_at
+                  ? new Date(item.created_at).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "Today",
+                type: "leave",
+              });
+            });
+          }
+        } else {
+          // Employee: Fetch self leave applications & status updates
+          const res = await api.get("/leaves/my").catch(() => null);
+          if (res?.data?.data) {
+            const myLeaves = res.data.data;
+            myLeaves.slice(0, 10).forEach((item) => {
+              const typeStr = item.leave_type
+                ? item.leave_type.toUpperCase()
+                : "LEAVE";
+
+              let title = `⏳ Leave Application Pending`;
+              let message = `Your ${typeStr} request (${item.start_date} to ${item.end_date}) is pending review`;
+
+              if (item.status === "approved") {
+                title = `🎉 Leave Request Approved!`;
+                message = `Your ${typeStr} request (${item.start_date} to ${item.end_date}) was Approved by HR`;
+              } else if (item.status === "rejected") {
+                title = `❌ Leave Request Rejected`;
+                message = `Your ${typeStr} request (${item.start_date} to ${item.end_date}) was Rejected`;
+              }
+
+              notifList.push({
+                id: `myleave_${item.id}_${item.status}`,
+                title,
+                message,
+                time: item.created_at
+                  ? new Date(item.created_at).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "Today",
+                type: "leave",
+              });
+            });
+          }
+        }
+
+        // Add System Online baseline item
+        notifList.unshift({
+          id: "sys_online_active",
+          title: "🟢 System Synchronized",
+          message: "HRMS Server active & connected to database",
+          time: "Just now",
+          type: "system",
+        });
+
+        if (isMounted) {
+          setRawNotifs(notifList);
+        }
+      } catch (err) {
+        console.error("Failed to fetch real-time notifications:", err);
+      }
+    };
+
+    loadRealNotifications();
+  }, [user?.role, userKey, location.pathname]);
+
+  const notifications = rawNotifs.map((n) => ({
+    ...n,
+    unread: !readNotifIds.includes(n.id),
+  }));
+
+  const unreadCount = notifications.filter((n) => n.unread).length;
 
   const markAllAsRead = (e) => {
     if (e) e.stopPropagation();
-    const updated = notifications.map((n) => ({ ...n, unread: false }));
-    saveNotifications(updated);
+    const allIds = notifications.map((n) => n.id);
+    setReadNotifIds(allIds);
+    try {
+      localStorage.setItem(
+        `hrms_read_notifs_${userKey}`,
+        JSON.stringify(allIds)
+      );
+    } catch (err) {
+      console.error(err);
+    }
     notify.info("All notifications marked as read.");
   };
 
   const markAsRead = (id) => {
-    const updated = notifications.map((n) =>
-      n.id === id ? { ...n, unread: false } : n
-    );
-    saveNotifications(updated);
+    if (readNotifIds.includes(id)) return;
+    const updated = [...readNotifIds, id];
+    setReadNotifIds(updated);
+    try {
+      localStorage.setItem(
+        `hrms_read_notifs_${userKey}`,
+        JSON.stringify(updated)
+      );
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
