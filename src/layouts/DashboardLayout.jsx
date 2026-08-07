@@ -1,18 +1,46 @@
-import { useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
+import {
+  HomeIcon,
+  UserGroupIcon,
+  BuildingOfficeIcon,
+  ClockIcon,
+  DocumentTextIcon,
+  UsersIcon,
+  UserIcon,
+  MapPinIcon,
+  ClipboardDocumentCheckIcon,
+  ArrowRightStartOnRectangleIcon,
+  Bars3Icon,
+  XMarkIcon,
+  BellIcon,
+  SparklesIcon,
+  BuildingOffice2Icon
+} from "@heroicons/react/24/outline";
 
 function DashboardLayout() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [currentDate, setCurrentDate] = useState("");
 
   const userData = localStorage.getItem("user");
   const user = userData ? JSON.parse(userData) : null;
+
+  useEffect(() => {
+    const dateStr = new Date().toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    });
+    setCurrentDate(dateStr);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setMobileOpen(false);
-
     navigate("/", { replace: true });
   };
 
@@ -20,229 +48,329 @@ function DashboardLayout() {
     setMobileOpen(false);
   };
 
+  // Helper for page title based on path
+  const getPageTitle = () => {
+    const path = location.pathname;
+    if (path === "/dashboard") return "Dashboard Overview";
+    if (path === "/employees") return "Employee Directory";
+    if (path === "/departments") return "Departments";
+    if (path === "/attendance") return "Attendance Tracker";
+    if (path === "/leave") return "Leave Requests";
+    if (path === "/users") return "User Management";
+    if (path === "/profile") return "My Profile";
+    if (path === "/my-attendance") return "My Attendance Logs";
+    if (path === "/my-leave") return "My Leave Applications";
+    return "HR Portal";
+  };
+
+  const navItemClass = (isActive) =>
+    `group relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${
+      isActive
+        ? "bg-indigo-600/15 text-indigo-400 border border-indigo-500/20 font-semibold"
+        : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
+    }`;
+
+  const renderActiveIndicator = (isActive) =>
+    isActive ? (
+      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-indigo-500 rounded-r-full shadow-glow" />
+    ) : null;
+
+  const getUserInitials = (name) => {
+    if (!name) return "U";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-gray-100 min-w-0 overflow-x-hidden">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-slate-50/70 min-w-0 overflow-x-hidden">
       {/* Backdrop overlay for mobile drawer */}
       {mobileOpen && (
         <div
           onClick={closeMobileMenu}
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity"
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 lg:hidden transition-opacity"
           aria-hidden="true"
         />
       )}
 
       {/* Sidebar / Mobile Drawer */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-slate-800 text-white flex flex-col shadow-lg transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-slate-100 flex flex-col border-r border-slate-800/80 shadow-2xl transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Logo & Close button for mobile */}
-        <div className="p-6 border-b border-slate-700 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-center flex-1 lg:text-center">
-            HRMS
-          </h1>
+        <div className="p-5 border-b border-slate-800/80 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+              <BuildingOffice2Icon className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-base font-bold tracking-tight text-white font-heading">
+                HRMS Portal
+              </h1>
+              <p className="text-[11px] text-indigo-400 font-medium tracking-wide uppercase">
+                Enterprise Suite
+              </p>
+            </div>
+          </div>
           <button
             onClick={closeMobileMenu}
-            className="lg:hidden text-slate-400 hover:text-white p-1"
+            className="lg:hidden text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
             aria-label="Close Sidebar"
           >
-            ✕
+            <XMarkIcon className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-4 space-y-2">
-          {/* Management (Admin / HR) */}
+        {/* Navigation List */}
+        <nav className="flex-1 overflow-y-auto p-4 space-y-6">
+          {/* Management Section (Admin / HR) */}
           {(user?.role === "admin" || user?.role === "hr") && (
-            <>
-              <NavLink
-                to="/dashboard"
-                onClick={closeMobileMenu}
-                className={({ isActive }) =>
-                  `block px-4 py-3 rounded-lg transition ${
-                    isActive ? "bg-blue-600" : "hover:bg-slate-700"
-                  }`
-                }
-              >
-                🏠 Dashboard
-              </NavLink>
+            <div>
+              <p className="px-3.5 mb-2 text-[10px] uppercase font-bold text-slate-500 tracking-wider">
+                Management
+              </p>
+              <div className="space-y-1">
+                <NavLink
+                  to="/dashboard"
+                  onClick={closeMobileMenu}
+                  className={({ isActive }) => navItemClass(isActive)}
+                >
+                  {({ isActive }) => (
+                    <>
+                      {renderActiveIndicator(isActive)}
+                      <HomeIcon className={`w-5 h-5 shrink-0 ${isActive ? "text-indigo-400" : "text-slate-400 group-hover:text-slate-200"}`} />
+                      <span>Dashboard</span>
+                    </>
+                  )}
+                </NavLink>
 
-              <NavLink
-                to="/employees"
-                onClick={closeMobileMenu}
-                className={({ isActive }) =>
-                  `block px-4 py-3 rounded-lg transition ${
-                    isActive ? "bg-blue-600" : "hover:bg-slate-700"
-                  }`
-                }
-              >
-                👨‍💼 Employees
-              </NavLink>
+                <NavLink
+                  to="/employees"
+                  onClick={closeMobileMenu}
+                  className={({ isActive }) => navItemClass(isActive)}
+                >
+                  {({ isActive }) => (
+                    <>
+                      {renderActiveIndicator(isActive)}
+                      <UserGroupIcon className={`w-5 h-5 shrink-0 ${isActive ? "text-indigo-400" : "text-slate-400 group-hover:text-slate-200"}`} />
+                      <span>Employees</span>
+                    </>
+                  )}
+                </NavLink>
 
-              <NavLink
-                to="/departments"
-                onClick={closeMobileMenu}
-                className={({ isActive }) =>
-                  `block px-4 py-3 rounded-lg transition ${
-                    isActive ? "bg-blue-600" : "hover:bg-slate-700"
-                  }`
-                }
-              >
-                🏢 Departments
-              </NavLink>
+                <NavLink
+                  to="/departments"
+                  onClick={closeMobileMenu}
+                  className={({ isActive }) => navItemClass(isActive)}
+                >
+                  {({ isActive }) => (
+                    <>
+                      {renderActiveIndicator(isActive)}
+                      <BuildingOfficeIcon className={`w-5 h-5 shrink-0 ${isActive ? "text-indigo-400" : "text-slate-400 group-hover:text-slate-200"}`} />
+                      <span>Departments</span>
+                    </>
+                  )}
+                </NavLink>
 
-              <NavLink
-                to="/attendance"
-                onClick={closeMobileMenu}
-                className={({ isActive }) =>
-                  `block px-4 py-3 rounded-lg transition ${
-                    isActive ? "bg-blue-600" : "hover:bg-slate-700"
-                  }`
-                }
-              >
-                🕒 Attendance
-              </NavLink>
+                <NavLink
+                  to="/attendance"
+                  onClick={closeMobileMenu}
+                  className={({ isActive }) => navItemClass(isActive)}
+                >
+                  {({ isActive }) => (
+                    <>
+                      {renderActiveIndicator(isActive)}
+                      <ClockIcon className={`w-5 h-5 shrink-0 ${isActive ? "text-indigo-400" : "text-slate-400 group-hover:text-slate-200"}`} />
+                      <span>Attendance</span>
+                    </>
+                  )}
+                </NavLink>
 
-              <NavLink
-                to="/leave"
-                onClick={closeMobileMenu}
-                className={({ isActive }) =>
-                  `block px-4 py-3 rounded-lg transition ${
-                    isActive ? "bg-blue-600" : "hover:bg-slate-700"
-                  }`
-                }
-              >
-                📄 Leave
-              </NavLink>
-            </>
+                <NavLink
+                  to="/leave"
+                  onClick={closeMobileMenu}
+                  className={({ isActive }) => navItemClass(isActive)}
+                >
+                  {({ isActive }) => (
+                    <>
+                      {renderActiveIndicator(isActive)}
+                      <DocumentTextIcon className={`w-5 h-5 shrink-0 ${isActive ? "text-indigo-400" : "text-slate-400 group-hover:text-slate-200"}`} />
+                      <span>Leave Requests</span>
+                    </>
+                  )}
+                </NavLink>
+              </div>
+            </div>
           )}
 
-          {/* Administration (Admin Only) */}
+          {/* Administration Section (Admin Only) */}
           {user?.role === "admin" && (
-            <>
-              <div className="border-t border-slate-700 my-3"></div>
-
-              <p className="px-4 text-xs uppercase text-slate-400 font-semibold">
+            <div>
+              <p className="px-3.5 mb-2 text-[10px] uppercase font-bold text-slate-500 tracking-wider">
                 Administration
               </p>
-
-              <NavLink
-                to="/users"
-                onClick={closeMobileMenu}
-                className={({ isActive }) =>
-                  `block px-4 py-3 rounded-lg transition ${
-                    isActive ? "bg-blue-600" : "hover:bg-slate-700"
-                  }`
-                }
-              >
-                👥 User Management
-              </NavLink>
-            </>
+              <div className="space-y-1">
+                <NavLink
+                  to="/users"
+                  onClick={closeMobileMenu}
+                  className={({ isActive }) => navItemClass(isActive)}
+                >
+                  {({ isActive }) => (
+                    <>
+                      {renderActiveIndicator(isActive)}
+                      <UsersIcon className={`w-5 h-5 shrink-0 ${isActive ? "text-indigo-400" : "text-slate-400 group-hover:text-slate-200"}`} />
+                      <span>User Control</span>
+                    </>
+                  )}
+                </NavLink>
+              </div>
+            </div>
           )}
 
-          {/* Employee Self Service */}
-          <div className="border-t border-slate-700 my-3"></div>
+          {/* Self Service Section */}
+          <div>
+            <p className="px-3.5 mb-2 text-[10px] uppercase font-bold text-slate-500 tracking-wider">
+              Self Service
+            </p>
+            <div className="space-y-1">
+              <NavLink
+                to="/profile"
+                onClick={closeMobileMenu}
+                className={({ isActive }) => navItemClass(isActive)}
+              >
+                {({ isActive }) => (
+                  <>
+                    {renderActiveIndicator(isActive)}
+                    <UserIcon className={`w-5 h-5 shrink-0 ${isActive ? "text-indigo-400" : "text-slate-400 group-hover:text-slate-200"}`} />
+                    <span>My Profile</span>
+                  </>
+                )}
+              </NavLink>
 
-          <p className="px-4 text-xs uppercase text-slate-400 font-semibold">
-            Employee Self Service
-          </p>
+              <NavLink
+                to="/my-attendance"
+                onClick={closeMobileMenu}
+                className={({ isActive }) => navItemClass(isActive)}
+              >
+                {({ isActive }) => (
+                  <>
+                    {renderActiveIndicator(isActive)}
+                    <MapPinIcon className={`w-5 h-5 shrink-0 ${isActive ? "text-indigo-400" : "text-slate-400 group-hover:text-slate-200"}`} />
+                    <span>My Attendance</span>
+                  </>
+                )}
+              </NavLink>
 
-          <NavLink
-            to="/profile"
-            onClick={closeMobileMenu}
-            className={({ isActive }) =>
-              `block px-4 py-3 rounded-lg transition ${
-                isActive ? "bg-blue-600" : "hover:bg-slate-700"
-              }`
-            }
-          >
-            🙍 My Profile
-          </NavLink>
-
-          <NavLink
-            to="/my-attendance"
-            onClick={closeMobileMenu}
-            className={({ isActive }) =>
-              `block px-4 py-3 rounded-lg transition ${
-                isActive ? "bg-blue-600" : "hover:bg-slate-700"
-              }`
-            }
-          >
-            📍 My Attendance
-          </NavLink>
-
-          <NavLink
-            to="/my-leave"
-            onClick={closeMobileMenu}
-            className={({ isActive }) =>
-              `block px-4 py-3 rounded-lg transition ${
-                isActive ? "bg-blue-600" : "hover:bg-slate-700"
-              }`
-            }
-          >
-            📝 My Leave
-          </NavLink>
+              <NavLink
+                to="/my-leave"
+                onClick={closeMobileMenu}
+                className={({ isActive }) => navItemClass(isActive)}
+              >
+                {({ isActive }) => (
+                  <>
+                    {renderActiveIndicator(isActive)}
+                    <ClipboardDocumentCheckIcon className={`w-5 h-5 shrink-0 ${isActive ? "text-indigo-400" : "text-slate-400 group-hover:text-slate-200"}`} />
+                    <span>My Leave</span>
+                  </>
+                )}
+              </NavLink>
+            </div>
+          </div>
         </nav>
 
-        {/* Logout */}
-        <div className="p-4 border-t border-slate-700">
+        {/* User Card & Logout */}
+        <div className="p-4 border-t border-slate-800/80 bg-slate-950/40">
+          <div className="flex items-center justify-between mb-3 px-1">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="w-9 h-9 rounded-xl bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 font-bold text-xs flex items-center justify-center shrink-0">
+                {getUserInitials(user?.name)}
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-slate-200 truncate">
+                  {user?.name || "Employee"}
+                </p>
+                <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 uppercase tracking-wider">
+                  {user?.role || "Employee"}
+                </span>
+              </div>
+            </div>
+          </div>
+
           <button
             onClick={handleLogout}
-            className="w-full bg-red-500 hover:bg-red-600 py-3 rounded-lg font-medium transition"
+            className="w-full flex items-center justify-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 py-2.5 rounded-xl text-xs font-medium transition-all"
           >
-            🚪 Logout
+            <ArrowRightStartOnRectangleIcon className="w-4 h-4" />
+            <span>Sign Out</span>
           </button>
         </div>
       </aside>
 
-      {/* Main Content Area */}
+      {/* Main Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Navbar Header */}
-        <header className="bg-white shadow-md px-4 sm:px-8 py-4 sm:py-5 flex flex-wrap items-center justify-between gap-3">
+        {/* Sticky Glass Top Header */}
+        <header className="sticky top-0 z-30 glass-header border-b border-slate-200/80 px-4 sm:px-8 py-3.5 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            {/* Hamburger button for mobile/tablet */}
+            {/* Hamburger button for mobile */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="lg:hidden text-gray-700 hover:text-blue-600 p-2 rounded-lg border border-gray-200 focus:outline-none"
+              className="lg:hidden text-slate-600 hover:text-indigo-600 p-2 rounded-xl border border-slate-200 focus:outline-none bg-white"
               aria-label="Toggle Menu"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
+              <Bars3Icon className="w-5 h-5" />
             </button>
 
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
-                HR Management System
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900 font-heading">
+                {getPageTitle()}
               </h2>
-              <p className="text-gray-500 text-xs sm:text-sm hidden sm:block">
-                Manage your employees efficiently
-              </p>
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <span>HR Portal</span>
+                <span>•</span>
+                <span className="text-slate-600 font-medium">{currentDate}</span>
+              </div>
             </div>
           </div>
 
-          <div className="text-right ml-auto sm:ml-0">
-            <p className="font-semibold text-gray-700 text-sm sm:text-base">
-              Welcome, {user?.name || "User"}
-            </p>
-            <p className="text-xs sm:text-sm text-gray-500 capitalize">
-              {user?.role || "Employee"}
-            </p>
+          <div className="flex items-center gap-3">
+            {/* Quick Status Pill */}
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs text-slate-600">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="font-medium">System Online</span>
+            </div>
+
+            {/* Notification Bell */}
+            <button
+              className="relative p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 rounded-xl transition"
+              title="Notifications"
+            >
+              <BellIcon className="w-5 h-5" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-600 rounded-full" />
+            </button>
+
+            {/* User Chip */}
+            <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+              <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center border border-indigo-200">
+                {getUserInitials(user?.name)}
+              </div>
+              <div className="hidden md:block text-left">
+                <p className="text-xs font-semibold text-slate-800 leading-tight">
+                  {user?.name || "User"}
+                </p>
+                <p className="text-[10px] text-slate-500 capitalize">
+                  {user?.role || "Employee"}
+                </p>
+              </div>
+            </div>
           </div>
         </header>
 
-        {/* Page Content */}
+        {/* Page Content View */}
         <main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8">
           <Outlet />
         </main>
