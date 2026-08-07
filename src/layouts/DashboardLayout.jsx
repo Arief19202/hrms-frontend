@@ -101,6 +101,15 @@ function DashboardLayout() {
     }
   });
 
+  const [markedAllReadTime, setMarkedAllReadTime] = useState(() => {
+    try {
+      const val = localStorage.getItem(`hrms_marked_all_read_${userKey}`);
+      return val ? Number(val) : 0;
+    } catch {
+      return 0;
+    }
+  });
+
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
 
   useEffect(() => {
@@ -115,27 +124,31 @@ function DashboardLayout() {
           const res = await api.get("/leaves").catch(() => null);
           if (res?.data?.data) {
             const leaves = res.data.data;
-            leaves.slice(0, 10).forEach((item) => {
+            leaves.slice(0, 15).forEach((item) => {
               const empName = item.employees?.name || "Employee";
               const typeStr = item.leave_type
                 ? item.leave_type.toUpperCase()
                 : "LEAVE";
+              const createdAtTime = item.created_at
+                ? new Date(item.created_at).getTime()
+                : Date.now();
 
-              let title = `📄 ${empName} applied for ${typeStr}`;
-              let message = `Requested leave from ${item.start_date} to ${item.end_date} (Status: ${item.status || "pending"})`;
+              let title = `📄 ${empName} submitted ${typeStr}`;
+              let message = `Requested leave from ${item.start_date} to ${item.end_date} (Awaiting Admin/HR approval)`;
 
               if (item.status === "approved") {
                 title = `✅ ${empName}'s ${typeStr} Approved`;
-                message = `Leave request from ${item.start_date} to ${item.end_date} has been Approved`;
+                message = `Leave request (${item.start_date} to ${item.end_date}) was Approved by Admin/HR`;
               } else if (item.status === "rejected") {
                 title = `❌ ${empName}'s ${typeStr} Rejected`;
-                message = `Leave request from ${item.start_date} to ${item.end_date} was Rejected`;
+                message = `Leave request (${item.start_date} to ${item.end_date}) was Rejected by Admin/HR`;
               }
 
               notifList.push({
                 id: `leave_${item.id}_${item.status}`,
                 title,
                 message,
+                timestamp: createdAtTime,
                 time: item.created_at
                   ? new Date(item.created_at).toLocaleTimeString([], {
                       hour: "2-digit",
@@ -151,26 +164,30 @@ function DashboardLayout() {
           const res = await api.get("/leaves/my").catch(() => null);
           if (res?.data?.data) {
             const myLeaves = res.data.data;
-            myLeaves.slice(0, 10).forEach((item) => {
+            myLeaves.slice(0, 15).forEach((item) => {
               const typeStr = item.leave_type
                 ? item.leave_type.toUpperCase()
                 : "LEAVE";
+              const createdAtTime = item.created_at
+                ? new Date(item.created_at).getTime()
+                : Date.now();
 
               let title = `⏳ Leave Application Pending`;
-              let message = `Your ${typeStr} request (${item.start_date} to ${item.end_date}) is pending review`;
+              let message = `Your ${typeStr} request (${item.start_date} to ${item.end_date}) is awaiting Admin/HR review`;
 
               if (item.status === "approved") {
                 title = `🎉 Leave Request Approved!`;
-                message = `Your ${typeStr} request (${item.start_date} to ${item.end_date}) was Approved by HR`;
+                message = `Your ${typeStr} request (${item.start_date} to ${item.end_date}) was Approved by Admin/HR`;
               } else if (item.status === "rejected") {
                 title = `❌ Leave Request Rejected`;
-                message = `Your ${typeStr} request (${item.start_date} to ${item.end_date}) was Rejected`;
+                message = `Your ${typeStr} request (${item.start_date} to ${item.end_date}) was Rejected by Admin/HR`;
               }
 
               notifList.push({
                 id: `myleave_${item.id}_${item.status}`,
                 title,
                 message,
+                timestamp: createdAtTime,
                 time: item.created_at
                   ? new Date(item.created_at).toLocaleTimeString([], {
                       hour: "2-digit",
@@ -183,11 +200,12 @@ function DashboardLayout() {
           }
         }
 
-        // Add System Online baseline item
+        // Add System Synchronized baseline item
         notifList.unshift({
           id: "sys_online_active",
           title: "🟢 System Synchronized",
           message: "HRMS Server active & connected to database",
+          timestamp: 0,
           time: "Just now",
           type: "system",
         });
@@ -203,18 +221,27 @@ function DashboardLayout() {
     loadRealNotifications();
   }, [user?.role, userKey, location.pathname]);
 
-  const notifications = rawNotifs.map((n) => ({
-    ...n,
-    unread: !readNotifIds.includes(n.id),
-  }));
+  const notifications = rawNotifs.map((n) => {
+    const isReadById = readNotifIds.includes(n.id);
+    const isReadByTime = markedAllReadTime > 0 && n.timestamp <= markedAllReadTime;
+    const isUnread = !(isReadById || isReadByTime);
+    return {
+      ...n,
+      unread: isUnread,
+    };
+  });
 
   const unreadCount = notifications.filter((n) => n.unread).length;
 
   const markAllAsRead = (e) => {
     if (e) e.stopPropagation();
-    const allIds = notifications.map((n) => n.id);
+    const now = Date.now();
+    setMarkedAllReadTime(now);
+    const allIds = rawNotifs.map((n) => n.id);
     setReadNotifIds(allIds);
+
     try {
+      localStorage.setItem(`hrms_marked_all_read_${userKey}`, String(now));
       localStorage.setItem(
         `hrms_read_notifs_${userKey}`,
         JSON.stringify(allIds)
