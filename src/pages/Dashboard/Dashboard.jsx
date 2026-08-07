@@ -4,6 +4,7 @@ import api from "../../api/axios";
 
 import DashboardStats from "../../components/dashboard/DashboardStats";
 import RecentLeaves from "../../components/dashboard/RecentLeaves";
+import QuickActionsWidget from "../../components/dashboard/QuickActionsWidget";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 
 function Dashboard() {
@@ -125,6 +126,9 @@ function Dashboard() {
           </button>
         </div>
       </div>
+
+      {/* Quick Action Interactive Bar (Clock In/Out, Quick Leave, Shortcuts) */}
+      <QuickActionsWidget user={user} onRefreshData={fetchDashboard} />
 
       {/* Stats Cards Grid */}
       <DashboardStats statistics={statistics} />
