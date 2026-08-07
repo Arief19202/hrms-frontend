@@ -5,10 +5,15 @@ function DepartmentTable({
   onEdit,
   onDelete,
 }) {
-  // Guarantee sorting by ID in ascending order (1, 2, 3, 4, 5...)
-  const sortedDepartments = [...departments].sort(
-    (a, b) => (Number(a.id) || 0) - (Number(b.id) || 0)
-  );
+  // Sort departments strictly by ID in ascending order (1, 2, 3, 4, 5...)
+  const sortedDepartments = [...departments].sort((a, b) => {
+    const numA = Number(a.id);
+    const numB = Number(b.id);
+    if (!isNaN(numA) && !isNaN(numB)) {
+      return numA - numB;
+    }
+    return String(a.id || "").localeCompare(String(b.id || ""), undefined, { numeric: true });
+  });
 
   return (
     <div className="bg-white rounded-xl shadow overflow-hidden">
@@ -45,12 +50,12 @@ function DepartmentTable({
                 </td>
               </tr>
             ) : (
-              sortedDepartments.map((department) => (
+              sortedDepartments.map((department, index) => (
                 <tr
                   key={department.id}
                   className="border-t hover:bg-gray-50 text-sm sm:text-base transition-colors"
                 >
-                  <td className="px-3 py-3 sm:px-6 sm:py-4 whitespace-nowrap font-mono text-gray-700">
+                  <td className="px-3 py-3 sm:px-6 sm:py-4 whitespace-nowrap font-mono text-gray-700 font-semibold">
                     {department.id}
                   </td>
 
