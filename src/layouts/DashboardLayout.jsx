@@ -18,6 +18,8 @@ import {
   BuildingOffice2Icon
 } from "@heroicons/react/24/outline";
 
+import notify from "../utils/notify";
+
 function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -118,6 +120,7 @@ function DashboardLayout() {
 
   const markAllAsRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
+    notify.info("All notifications marked as read.");
   };
 
   const markAsRead = (id) => {
@@ -420,9 +423,13 @@ function DashboardLayout() {
                       <h3 className="font-bold text-slate-900 font-heading text-sm">
                         Notifications
                       </h3>
-                      {unreadCount > 0 && (
+                      {unreadCount > 0 ? (
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700">
                           {unreadCount} new
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">
+                          ✓ All read
                         </span>
                       )}
                     </div>
