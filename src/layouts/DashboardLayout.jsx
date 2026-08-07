@@ -13,13 +13,9 @@ import {
   ArrowRightStartOnRectangleIcon,
   Bars3Icon,
   XMarkIcon,
-  BellIcon,
   SparklesIcon,
   BuildingOffice2Icon
 } from "@heroicons/react/24/outline";
-
-import api from "../api/axios";
-import notify from "../utils/notify";
 
 function DashboardLayout() {
   const navigate = useNavigate();
@@ -90,182 +86,6 @@ function DashboardLayout() {
       .slice(0, 2);
   };
 
-  // Dynamic Notifications Engine
-  const [rawNotifs, setRawNotifs] = useState([]);
-  const [readNotifIds, setReadNotifIds] = useState(() => {
-    try {
-      const saved = localStorage.getItem(`hrms_read_notifs_${userKey}`);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  const [markedAllReadTime, setMarkedAllReadTime] = useState(() => {
-    try {
-      const val = localStorage.getItem(`hrms_marked_all_read_${userKey}`);
-      return val ? Number(val) : 0;
-    } catch {
-      return 0;
-    }
-  });
-
-  const [showNotifDropdown, setShowNotifDropdown] = useState(false);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadRealNotifications = async () => {
-      try {
-        const notifList = [];
-
-        // 1. Fetch Leaves for HR/Admin or Employee
-        if (user?.role === "admin" || user?.role === "hr") {
-          const res = await api.get("/leaves").catch(() => null);
-          if (res?.data?.data) {
-            const leaves = res.data.data;
-            leaves.slice(0, 15).forEach((item) => {
-              const empName = item.employees?.name || "Employee";
-              const typeStr = item.leave_type
-                ? item.leave_type.toUpperCase()
-                : "LEAVE";
-              const createdAtTime = item.created_at
-                ? new Date(item.created_at).getTime()
-                : Date.now();
-
-              let title = `📄 ${empName} submitted ${typeStr}`;
-              let message = `Requested leave from ${item.start_date} to ${item.end_date} (Awaiting Admin/HR approval)`;
-
-              if (item.status === "approved") {
-                title = `✅ ${empName}'s ${typeStr} Approved`;
-                message = `Leave request (${item.start_date} to ${item.end_date}) was Approved by Admin/HR`;
-              } else if (item.status === "rejected") {
-                title = `❌ ${empName}'s ${typeStr} Rejected`;
-                message = `Leave request (${item.start_date} to ${item.end_date}) was Rejected by Admin/HR`;
-              }
-
-              notifList.push({
-                id: `leave_${item.id}_${item.status}`,
-                title,
-                message,
-                timestamp: createdAtTime,
-                time: item.created_at
-                  ? new Date(item.created_at).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
-                  : "Today",
-                type: "leave",
-              });
-            });
-          }
-        } else {
-          // Employee: Fetch self leave applications & status updates
-          const res = await api.get("/leaves/my").catch(() => null);
-          if (res?.data?.data) {
-            const myLeaves = res.data.data;
-            myLeaves.slice(0, 15).forEach((item) => {
-              const typeStr = item.leave_type
-                ? item.leave_type.toUpperCase()
-                : "LEAVE";
-              const createdAtTime = item.created_at
-                ? new Date(item.created_at).getTime()
-                : Date.now();
-
-              let title = `⏳ Leave Application Pending`;
-              let message = `Your ${typeStr} request (${item.start_date} to ${item.end_date}) is awaiting Admin/HR review`;
-
-              if (item.status === "approved") {
-                title = `🎉 Leave Request Approved!`;
-                message = `Your ${typeStr} request (${item.start_date} to ${item.end_date}) was Approved by Admin/HR`;
-              } else if (item.status === "rejected") {
-                title = `❌ Leave Request Rejected`;
-                message = `Your ${typeStr} request (${item.start_date} to ${item.end_date}) was Rejected by Admin/HR`;
-              }
-
-              notifList.push({
-                id: `myleave_${item.id}_${item.status}`,
-                title,
-                message,
-                timestamp: createdAtTime,
-                time: item.created_at
-                  ? new Date(item.created_at).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
-                  : "Today",
-                type: "leave",
-              });
-            });
-          }
-        }
-
-        // Add System Synchronized baseline item
-        notifList.unshift({
-          id: "sys_online_active",
-          title: "🟢 System Synchronized",
-          message: "HRMS Server active & connected to database",
-          timestamp: 0,
-          time: "Just now",
-          type: "system",
-        });
-
-        if (isMounted) {
-          setRawNotifs(notifList);
-        }
-      } catch (err) {
-        console.error("Failed to fetch real-time notifications:", err);
-      }
-    };
-
-    loadRealNotifications();
-  }, [user?.role, userKey, location.pathname]);
-
-  const notifications = rawNotifs.map((n) => {
-    const isReadById = readNotifIds.includes(n.id);
-    const isReadByTime = markedAllReadTime > 0 && n.timestamp <= markedAllReadTime;
-    const isUnread = !(isReadById || isReadByTime);
-    return {
-      ...n,
-      unread: isUnread,
-    };
-  });
-
-  const unreadCount = notifications.filter((n) => n.unread).length;
-
-  const markAllAsRead = (e) => {
-    if (e) e.stopPropagation();
-    const now = Date.now();
-    setMarkedAllReadTime(now);
-    const allIds = rawNotifs.map((n) => n.id);
-    setReadNotifIds(allIds);
-
-    try {
-      localStorage.setItem(`hrms_marked_all_read_${userKey}`, String(now));
-      localStorage.setItem(
-        `hrms_read_notifs_${userKey}`,
-        JSON.stringify(allIds)
-      );
-    } catch (err) {
-      console.error(err);
-    }
-    notify.info("All notifications marked as read.");
-  };
-
-  const markAsRead = (id) => {
-    if (readNotifIds.includes(id)) return;
-    const updated = [...readNotifIds, id];
-    setReadNotifIds(updated);
-    try {
-      localStorage.setItem(
-        `hrms_read_notifs_${userKey}`,
-        JSON.stringify(updated)
-      );
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-slate-50/70 min-w-0 overflow-x-hidden">
       {/* Backdrop overlay ONLY for mobile drawer */}
@@ -273,15 +93,6 @@ function DashboardLayout() {
         <div
           onClick={closeMobileMenu}
           className="fixed inset-0 bg-slate-950/50 backdrop-blur-xs z-40 lg:hidden transition-opacity"
-          aria-hidden="true"
-        />
-      )}
-
-      {/* Invisible click-outside listener for Notification Dropdown (no dark overlay) */}
-      {showNotifDropdown && (
-        <div
-          onClick={() => setShowNotifDropdown(false)}
-          className="fixed inset-0 z-40 bg-transparent cursor-default"
           aria-hidden="true"
         />
       )}
@@ -532,96 +343,6 @@ function DashboardLayout() {
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs text-slate-600">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="font-medium">System Online</span>
-            </div>
-
-            {/* Notification Bell Button */}
-            <div className="relative">
-              <button
-                onClick={() => setShowNotifDropdown(!showNotifDropdown)}
-                className={`relative p-2 rounded-xl transition ${
-                  showNotifDropdown
-                    ? "bg-indigo-50 text-indigo-600"
-                    : "text-slate-500 hover:text-indigo-600 hover:bg-slate-100"
-                }`}
-                title="Notifications"
-                aria-label="Notifications"
-              >
-                <BellIcon className="w-5 h-5" />
-                {unreadCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-indigo-600 rounded-full border-2 border-white" />
-                )}
-              </button>
-
-              {/* Notification Dropdown Panel */}
-              {showNotifDropdown && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-slate-200 shadow-2xl rounded-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
-                  <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-slate-900 font-heading text-sm">
-                        Notifications
-                      </h3>
-                      {unreadCount > 0 ? (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700">
-                          {unreadCount} new
-                        </span>
-                      ) : (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">
-                          ✓ All read
-                        </span>
-                      )}
-                    </div>
-                    {unreadCount > 0 && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          markAllAsRead(e);
-                        }}
-                        className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 cursor-pointer"
-                      >
-                        Mark all as read
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
-                    {notifications.map((n) => (
-                      <div
-                        key={n.id}
-                        onClick={() => markAsRead(n.id)}
-                        className={`p-3.5 flex items-start gap-3 hover:bg-slate-50 cursor-pointer transition ${
-                          n.unread ? "bg-indigo-50/30" : ""
-                        }`}
-                      >
-                        <div
-                          className={`w-2 h-2 rounded-full mt-2 shrink-0 ${
-                            n.unread ? "bg-indigo-600" : "bg-slate-300"
-                          }`}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <p className="text-xs font-semibold text-slate-800 truncate">
-                              {n.title}
-                            </p>
-                            <span className="text-[10px] text-slate-400 shrink-0">
-                              {n.time}
-                            </span>
-                          </div>
-                          <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
-                            {n.message}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="p-3 bg-slate-50 border-t border-slate-100 text-center">
-                    <p className="text-[11px] text-slate-400">
-                      Notifications synchronized with HRMS Server
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* User Chip */}
